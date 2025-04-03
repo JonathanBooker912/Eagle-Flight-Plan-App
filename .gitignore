@@ -1,0 +1,51 @@
+# Flutter/Dart/Pub related
+**/android/**/local.properties
+**/ios/**/Flutter/Generated.xcconfig
+**/ios/**/ServiceDefinitions.json
+**/ios/Pods/**
+
+# Flutter build output
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# macOS build output
+macos/Flutter/ephemeral/
+
+# Windows build output
+windows/flutter/ephemeral/
+
+# Linux build output
+linux/flutter/ephemeral/
+
+# Web build output
+web/.dart_tool/
+
+# Generated files
+*.lock
+*.log
+
+# Private keys and sensitive files
+*.key
+*.pem
+*.crt
+
+# Firebase related
+firebase_app_id_file.json
+
+# Coverage files
+coverage/
+
+# Misc
+*.DS_Store
+*.bak
