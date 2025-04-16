@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "eagle_flight_plan_app" "\0"
+            VALUE "FileDescription", "eagle_flight_plan_firebase" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "eagle_flight_plan_app" "\0"
+            VALUE "InternalName", "eagle_flight_plan_firebase" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2025 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "eagle_flight_plan_app.exe" "\0"
-            VALUE "ProductName", "eagle_flight_plan_app" "\0"
+            VALUE "OriginalFilename", "eagle_flight_plan_firebase.exe" "\0"
+            VALUE "ProductName", "eagle_flight_plan_firebase" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

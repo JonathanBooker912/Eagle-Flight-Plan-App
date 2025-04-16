@@ -1,4 +1,4 @@
-# eagle_flight_plan_app
+# eagle_flight_plan_firebase
 
 A new Flutter project.
 
