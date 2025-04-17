@@ -7,29 +7,46 @@ class NotificationService {
 
   NotificationService(this._serviceLocator, this.baseUrl);
 
-  Future<List<Map<String, dynamic>>> getUserNotifications(String userId) async {
+  Future<Map<String, dynamic>> getAllNotificationsForUser(String userId, {int page = 1, int pageSize = 14}) async {
     try {
       print('=== Notification Service Debug ===');
       print('User ID: $userId');
+      print('Page: $page');
+      print('Page Size: $pageSize');
       print('Base URL: $baseUrl');
-      print('Full endpoint: $baseUrl/notification/user/$userId/all');
+      print('Full endpoint: $baseUrl/notification/user/$userId');
       
       final response = await _serviceLocator.api.get(
-        '/notification/user/$userId/all',
+        '/notification/user/$userId',
+        queryParameters: {
+          'page': page.toString(),
+          'pageSize': pageSize.toString(),
+          'sortBy': 'createdAt',
+          'sortOrder': 'desc',
+        },
       );
       
       print('Response received:');
-      print('Status code: ${response['statusCode']}');
       print('Response body: ${json.encode(response)}');
       
       if (response['notifications'] == null) {
         print('Warning: No notifications field in response');
         print('Response keys: ${response.keys.join(', ')}');
-        return [];
+        return {
+          'notifications': [],
+          'total': 0,
+          'currentPage': page,
+          'totalPages': 0,
+        };
       }
       
       final notifications = List<Map<String, dynamic>>.from(response['notifications']);
+      final total = response['total'] ?? 0;
+      final totalPages = (total / pageSize).ceil();
+      
       print('Successfully parsed ${notifications.length} notifications');
+      print('Total notifications: $total');
+      print('Total pages: $totalPages');
       
       if (notifications.isNotEmpty) {
         print('First notification sample:');
@@ -40,7 +57,12 @@ class NotificationService {
         print('Created at: ${notifications.first['createdAt']}');
       }
       
-      return notifications;
+      return {
+        'notifications': notifications,
+        'total': total,
+        'currentPage': page,
+        'totalPages': totalPages,
+      };
     } catch (e) {
       print('=== Error in Notification Service ===');
       print('Error type: ${e.runtimeType}');

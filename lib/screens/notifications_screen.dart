@@ -19,6 +19,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   List<Map<String, dynamic>> _notifications = [];
   bool _isLoading = true;
   String? _error;
+  int _currentPage = 1;
+  int _totalPages = 1;
+  int _totalNotifications = 0;
 
   @override
   void initState() {
@@ -31,16 +34,21 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     try {
       setState(() => _isLoading = true);
       print('Loading notifications for user ${widget.userId}');
-      final notifications = await _notificationService.getUserNotifications(widget.userId);
-      print('Received ${notifications.length} notifications from service');
+      final response = await _notificationService.getAllNotificationsForUser(
+        widget.userId,
+        page: _currentPage,
+      );
+      print('Received response from service');
       
       setState(() {
-        _notifications = notifications.map((notification) {
+        // Cast the notifications list to the correct type
+        final List<dynamic> rawNotifications = response['notifications'] ?? [];
+        _notifications = rawNotifications.map((notification) {
           print('Processing notification: ${json.encode(notification)}');
           // Parse the date string into a DateTime object
           final date = DateTime.parse(notification['createdAt']);
           final processedNotification = {
-            ...notification,
+            ...notification as Map<String, dynamic>,
             'createdAt': date,
           };
           // Log the processed notification without the DateTime object
@@ -49,7 +57,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           print('Processed notification date: ${date.toString()}');
           return processedNotification;
         }).toList();
-        print('Final notifications list length: ${_notifications.length}');
+        _totalNotifications = response['total'] ?? 0;
+        _totalPages = response['totalPages'] ?? 1;
         _isLoading = false;
       });
     } catch (e) {
@@ -131,54 +140,53 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     Text(
                       notification['header'],
                       style: TextStyle(
-                        color: AppTheme.textPrimary,
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
+                        color: AppTheme.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 16),
-                    // Sender and Date
+                    // Metadata row
                     Row(
                       children: [
-                        Icon(
-                          Icons.person_outline,
-                          size: 16,
-                          color: AppTheme.textPrimary.withOpacity(0.6),
+                        Icon(Icons.person_outline, 
+                          size: 16, 
+                          color: AppTheme.textPrimary.withOpacity(0.7)
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 4),
                         Text(
-                          'Sent by ${notification['sender'] ?? 'System'}',
+                          'Sent by: ${notification['user']?['fullName'] ?? 'System'}',
                           style: TextStyle(
-                            color: AppTheme.textPrimary.withOpacity(0.6),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Icon(
-                          Icons.calendar_today,
-                          size: 16,
-                          color: AppTheme.textPrimary.withOpacity(0.6),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Sent on ${notification['createdAt'].toString().split(' ')[0]}',
-                          style: TextStyle(
-                            color: AppTheme.textPrimary.withOpacity(0.6),
+                            color: AppTheme.textPrimary.withOpacity(0.7),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
-                    // Divider
-                    Container(
-                      height: 1,
-                      color: AppTheme.textPrimary.withOpacity(0.1),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(Icons.access_time, 
+                          size: 16, 
+                          color: AppTheme.textPrimary.withOpacity(0.7)
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Sent on: ${_formatDate(notification['createdAt'])}',
+                          style: TextStyle(
+                            color: AppTheme.textPrimary.withOpacity(0.7),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
+                    // Divider
+                    Divider(color: AppTheme.textPrimary.withOpacity(0.3)),
+                    const SizedBox(height: 16),
                     // Description
                     Text(
                       notification['description'],
                       style: TextStyle(
-                        color: AppTheme.textPrimary.withOpacity(0.8),
+                        color: AppTheme.textPrimary,
                         fontSize: 16,
                       ),
                     ),
@@ -192,93 +200,105 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
+  String _formatDate(DateTime date) {
+    return '${date.month.toString().padLeft(2, '0')}/${date.day.toString().padLeft(2, '0')}/${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')} ${date.hour >= 12 ? 'PM' : 'AM'}';
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        if (_notifications.any((n) => !n['read']))
-          Padding(
-            padding: const EdgeInsets.only(bottom: 16.0),
-            child: Text(
-              '${_notifications.where((n) => !n['read']).length} unread notifications',
-              style: TextStyle(
-                color: AppTheme.textPrimary,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-          ),
-        Expanded(
-          child: _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : _error != null
-                  ? Center(child: Text(_error!))
-                  : _notifications.isEmpty
-                      ? Center(
-                          child: Text(
-                            'No notifications yet',
-                            style: TextStyle(
-                              color: AppTheme.textPrimary,
-                              fontSize: 16,
-                            ),
-                          ),
-                        )
-                      : ListView.builder(
-                          itemCount: _notifications.length,
-                          itemBuilder: (context, index) {
-                            final notification = _notifications[index];
-                            final date = notification['createdAt'] as DateTime;
-                            return Card(
-                              margin: const EdgeInsets.symmetric(
-                                horizontal: 8.0,
-                                vertical: 4.0,
-                              ),
-                              color: AppTheme.surfaceColor,
-                              child: ListTile(
-                                title: Text(
-                                  notification['header'],
-                                  style: TextStyle(
-                                    color: AppTheme.textPrimary,
-                                    fontWeight: notification['read']
-                                        ? FontWeight.normal
-                                        : FontWeight.bold,
-                                  ),
-                                ),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      notification['description'],
-                                      style: TextStyle(
-                                        color: AppTheme.textPrimary.withOpacity(0.8),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      '${date.day}/${date.month}/${date.year}',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: AppTheme.textPrimary.withOpacity(0.6),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                trailing: !notification['read']
-                                    ? IconButton(
-                                        icon: Icon(
-                                          Icons.check_circle_outline,
-                                          color: AppTheme.accentColor,
-                                        ),
-                                        onPressed: () => _markAsRead(notification),
-                                      )
-                                    : null,
-                                onTap: () => _showNotificationDetails(notification),
-                              ),
-                            );
-                          },
+    return Scaffold(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _notifications.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'No Notifications!',
+                        style: TextStyle(
+                          fontSize: 24,
+                          color: AppTheme.textPrimary,
                         ),
-        ),
-      ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Complete some flight plan items to be notified!',
+                        style: TextStyle(
+                          color: AppTheme.textPrimary.withOpacity(0.7),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : Column(
+                  children: [
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: _notifications.length,
+                        itemBuilder: (context, index) {
+                          final notification = _notifications[index];
+                          return ListTile(
+                            title: Text(
+                              notification['header'],
+                              style: TextStyle(
+                                fontWeight: notification['read'] ? FontWeight.normal : FontWeight.bold,
+                                color: AppTheme.textPrimary,
+                              ),
+                            ),
+                            subtitle: Text(
+                              notification['description'],
+                              style: TextStyle(
+                                color: AppTheme.textPrimary.withOpacity(0.7),
+                              ),
+                            ),
+                            trailing: Text(
+                              _formatDate(notification['createdAt']),
+                              style: TextStyle(
+                                color: AppTheme.textPrimary.withOpacity(0.7),
+                              ),
+                            ),
+                            onTap: () {
+                              _markAsRead(notification);
+                              _showNotificationDetails(notification);
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                    if (_totalPages > 1)
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.chevron_left, color: AppTheme.textPrimary),
+                              onPressed: _currentPage > 1
+                                  ? () {
+                                      setState(() => _currentPage--);
+                                      _loadNotifications();
+                                    }
+                                  : null,
+                            ),
+                            Text(
+                              'Page $_currentPage of $_totalPages',
+                              style: TextStyle(color: AppTheme.textPrimary),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.chevron_right, color: AppTheme.textPrimary),
+                              onPressed: _currentPage < _totalPages
+                                  ? () {
+                                      setState(() => _currentPage++);
+                                      _loadNotifications();
+                                    }
+                                  : null,
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
     );
   }
 } 

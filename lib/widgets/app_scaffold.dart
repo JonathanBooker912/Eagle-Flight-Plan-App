@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../pages/home_page.dart';
 import '../screens/notifications_screen.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import '../services/api_token_service.dart';
 
 class AppScaffold extends StatelessWidget {
   final Widget body;
@@ -39,7 +39,7 @@ class NavigationBar extends StatelessWidget {
         : AppTheme.backgroundColor;
   }
 
-  void _navigateTo(BuildContext context, String route) {
+  void _navigateTo(BuildContext context, String route) async {
     Widget page;
     switch (route) {
       case '/home':
@@ -52,9 +52,14 @@ class NavigationBar extends StatelessWidget {
         page = Center(child: Text('QR Code Page'));
         break;
       case '/notifications':
-        page = NotificationsScreen(
-          userId: FirebaseAuth.instance.currentUser?.uid ?? '',
-        );
+        final userId = await TokenService.getUserId();
+        if (userId == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Please login again')),
+          );
+          return;
+        }
+        page = NotificationsScreen(userId: userId);
         break;
       case '/profile':
         page = Center(child: Text('Profile Page'));
@@ -62,20 +67,7 @@ class NavigationBar extends StatelessWidget {
       default:
         page = HomePage();
     }
-
-    Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-        pageBuilder:
-            (context, animation, secondaryAnimation) => AppScaffold(
-              title: route.substring(1).toUpperCase(),
-              body: page,
-              currentRoute: route,
-            ),
-        transitionDuration: Duration.zero,
-        reverseTransitionDuration: Duration.zero,
-      ),
-    );
+    Navigator.pushNamed(context, route);
   }
 
   @override

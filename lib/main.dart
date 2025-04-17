@@ -7,6 +7,7 @@ import 'widgets/app_scaffold.dart';
 import 'screens/notifications_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'services/api_token_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,7 +16,9 @@ void main() async {
   // Initialize service locator
   final serviceLocator = ServiceLocator();
   serviceLocator.initialize(
-    baseUrl: 'https://flightplan.eaglesoftwareteam.com/flight-plan-t1',
+    baseUrl: 'http://10.0.2.2:3031/flight-plan-t1', // Android emulator localhost
+    // baseUrl: 'http://localhost:3031/flight-plan-t1', // iOS simulator localhost
+    // baseUrl: '/flight-plan-t1', // Production URL
   );
 
   // Get the current user from Firebase Auth
@@ -50,18 +53,32 @@ class _MyAppState extends State<MyApp> {
       initialRoute: widget.initialRoute,
       routes: {
         '/login': (context) => const LoginPage(),
-        '/home':
-            (context) => AppScaffold(
+        '/home': (context) => AppScaffold(
               title: 'Eagle Flight Plan',
               body: HomePage(),
               currentRoute: '/home',
             ),
-        '/notifications': (context) => AppScaffold(
-              title: 'Notifications',
-              body: NotificationsScreen(
-                userId: FirebaseAuth.instance.currentUser?.uid ?? '',
-              ),
-              currentRoute: '/notifications',
+        '/notifications': (context) => FutureBuilder<String?>(
+              future: TokenService.getUserId(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError || !snapshot.hasData) {
+                  return AppScaffold(
+                    title: 'Error',
+                    body: Center(
+                      child: Text('Please login again'),
+                    ),
+                    currentRoute: '/notifications',
+                  );
+                }
+                return AppScaffold(
+                  title: 'Notifications',
+                  body: NotificationsScreen(userId: snapshot.data!),
+                  currentRoute: '/notifications',
+                );
+              },
             ),
       },
     );

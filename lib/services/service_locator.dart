@@ -13,7 +13,7 @@ class ServiceLocator {
   void initialize({required String baseUrl}) {
     this.baseUrl = baseUrl;
     _apiService = ApiService(baseUrl: baseUrl);
-    _auth = Auth(baseUrl: baseUrl);
+    _auth = Auth(_apiService, baseUrl);
   }
 
   ApiService get api => _apiService;

@@ -25,7 +25,7 @@ class _LoginPageState extends State<LoginPage> {
       });
 
       // Trigger the Google Sign-In flow
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       if (googleUser == null) {
         setState(() {
           _isLoading = false;
@@ -37,35 +37,36 @@ class _LoginPageState extends State<LoginPage> {
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
 
-      // Create Firebase credential from Google token
-      final credential = GoogleAuthProvider.credential(
+      print('Google ID Token: ${googleAuth.idToken}');
+      print('Google Access Token: ${googleAuth.accessToken}');
+
+      final response = await _serviceLocator.auth.loginWithGoogle(
+        googleAuth.idToken!,
         accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
       );
-
-      // Sign in to Firebase with the Google credential
-      final UserCredential userCredential = await _auth.signInWithCredential(
-        credential,
-      );
-      final idToken = await userCredential.user?.getIdToken();
-
-      final apiCredential = await _serviceLocator.auth.loginWithGoogle(idToken);
-
-      TokenService.saveToken(apiCredential['token']);
+      
+      print('Backend login response: ${response}');
+      
+      if (response['token'] == null) {
+        throw Exception('No token received from backend');
+      }
+      
+      if (response['userId'] == null) {
+        throw Exception('No user ID received from backend');
+      }
+      
+      // Save the token and user ID from our backend
+      await TokenService.saveToken(response['token']);
+      await TokenService.saveUserId(response['userId']);
 
       if (mounted) {
         Navigator.pushReplacementNamed(context, '/notifications');
       }
     } catch (e) {
-      print('Error signing in with Google: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error signing in: $e'),
-            backgroundColor: AppTheme.errorColor,
-          ),
-        );
-      }
+      print('Error during Google sign in: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error signing in: $e')),
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -213,4 +214,5 @@ class _LoginPageState extends State<LoginPage> {
 //                             ),
 //                           ],
 //                         ),
+//                       ),
 //                       ),

@@ -18,10 +18,16 @@ class ApiService {
       'Access-Control-Allow-Origin': '*',
       'crossDomain': 'true',
     };
+    
+    // Match Vue frontend's auth header handling exactly
     if (token != null && token.isNotEmpty) {
       headers['Authorization'] = 'Bearer $token';
+      print('Added Authorization header with token');
+    } else {
+      print('No valid token found, skipping Authorization header');
     }
-    print('Request headers: $headers');
+    
+    print('Final request headers: $headers');
     return headers;
   }
 
