@@ -54,7 +54,7 @@ class _LoginPageState extends State<LoginPage> {
       TokenService.saveToken(apiCredential['token']);
 
       if (mounted) {
-        Navigator.pushReplacementNamed(context, '/home');
+        Navigator.pushReplacementNamed(context, '/notifications');
       }
     } catch (e) {
       print('Error signing in with Google: $e');

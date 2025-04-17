@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../theme/app_theme.dart';
 import '../services/api_token_service.dart';
+import '../screens/notifications_screen.dart';
 
 class HomePage extends StatelessWidget {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
@@ -21,6 +23,19 @@ class HomePage extends StatelessWidget {
         title: const Text('Eagle Flight Plan'),
         backgroundColor: AppTheme.primaryColor,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NotificationsScreen(
+                    userId: FirebaseAuth.instance.currentUser?.uid ?? '',
+                  ),
+                ),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
