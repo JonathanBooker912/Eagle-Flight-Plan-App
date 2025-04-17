@@ -10,55 +10,125 @@ class ApiService {
 
   Future<Map<String, String>> _getHeaders() async {
     final token = await TokenService.getToken();
-    final headers = {'Content-Type': 'application/json'};
-    if (token != null) {
+    print('Current auth token: $token');
+    final headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+      'Access-Control-Allow-Origin': '*',
+      'crossDomain': 'true',
+    };
+    if (token != null && token.isNotEmpty) {
       headers['Authorization'] = 'Bearer $token';
     }
+    print('Request headers: $headers');
     return headers;
   }
 
-  Future<Map<String, dynamic>> get(String endpoint) async {
-    return _handleResponse(
-      await _client.get(
-        Uri.parse('$baseUrl$endpoint'),
-        headers: await _getHeaders(),
-      ),
+  Future<Map<String, dynamic>> get(
+    String endpoint, {
+    Map<String, String>? queryParameters,
+  }) async {
+    final url = Uri.parse('$baseUrl$endpoint').replace(
+      queryParameters: queryParameters,
     );
+    print('Making GET request to: $url');
+    final headers = await _getHeaders();
+    
+    final response = await _client.get(
+      url,
+      headers: headers,
+    );
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
+    
+    if (response.statusCode == 401) {
+      // Handle unauthorized response
+      print('Unauthorized response - clearing token');
+      await TokenService.clearToken();
+      throw Exception('Unauthorized - Please login again');
+    }
+    
+    return _handleResponse(response);
   }
 
   Future<Map<String, dynamic>> post(
     String endpoint,
     Map<String, dynamic> body,
   ) async {
-    return _handleResponse(
-      await _client.post(
-        Uri.parse('$baseUrl$endpoint'),
-        headers: await _getHeaders(),
-        body: jsonEncode(body),
-      ),
+    final url = '$baseUrl$endpoint';
+    print('Making POST request to: $url');
+    final headers = await _getHeaders();
+    print('Headers: $headers');
+    print('Body: ${jsonEncode(body)}');
+    
+    final response = await _client.post(
+      Uri.parse(url),
+      headers: headers,
+      body: jsonEncode(body),
     );
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
+    
+    if (response.statusCode == 401) {
+      // Handle unauthorized response
+      print('Unauthorized response - clearing token');
+      await TokenService.clearToken();
+      throw Exception('Unauthorized - Please login again');
+    }
+    
+    return _handleResponse(response);
   }
 
   Future<Map<String, dynamic>> put(
     String endpoint,
     Map<String, dynamic> body,
   ) async {
-    return _handleResponse(
-      await _client.put(
-        Uri.parse('$baseUrl$endpoint'),
-        headers: await _getHeaders(),
-        body: jsonEncode(body),
-      ),
+    final url = '$baseUrl$endpoint';
+    print('Making PUT request to: $url');
+    final headers = await _getHeaders();
+    print('Headers: $headers');
+    print('Body: ${jsonEncode(body)}');
+    
+    final response = await _client.put(
+      Uri.parse(url),
+      headers: headers,
+      body: jsonEncode(body),
     );
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
+    
+    if (response.statusCode == 401) {
+      // Handle unauthorized response
+      print('Unauthorized response - clearing token');
+      await TokenService.clearToken();
+      throw Exception('Unauthorized - Please login again');
+    }
+    
+    return _handleResponse(response);
   }
 
   Future<Map<String, dynamic>> delete(String endpoint) async {
-    return _handleResponse(
-      await _client.delete(
-        Uri.parse('$baseUrl$endpoint'),
-        headers: await _getHeaders(),
-      ),
+    final url = '$baseUrl$endpoint';
+    print('Making DELETE request to: $url');
+    final headers = await _getHeaders();
+    print('Headers: $headers');
+    
+    final response = await _client.delete(
+      Uri.parse(url),
+      headers: headers,
     );
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
+    
+    if (response.statusCode == 401) {
+      // Handle unauthorized response
+      print('Unauthorized response - clearing token');
+      await TokenService.clearToken();
+      throw Exception('Unauthorized - Please login again');
+    }
+    
+    return _handleResponse(response);
   }
 
   Map<String, dynamic> _handleResponse(http.Response response) {

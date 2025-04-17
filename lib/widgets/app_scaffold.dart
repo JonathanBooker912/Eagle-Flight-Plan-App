@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../pages/home_page.dart';
+import '../screens/notifications_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AppScaffold extends StatelessWidget {
   final Widget body;
@@ -50,7 +52,9 @@ class NavigationBar extends StatelessWidget {
         page = Center(child: Text('QR Code Page'));
         break;
       case '/notifications':
-        page = Center(child: Text('Notifications Page'));
+        page = NotificationsScreen(
+          userId: FirebaseAuth.instance.currentUser?.uid ?? '',
+        );
         break;
       case '/profile':
         page = Center(child: Text('Profile Page'));

@@ -4,6 +4,7 @@ import 'theme/app_theme.dart';
 import 'pages/login_page.dart';
 import 'pages/home_page.dart';
 import 'widgets/app_scaffold.dart';
+import 'screens/notifications_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -54,6 +55,13 @@ class _MyAppState extends State<MyApp> {
               title: 'Eagle Flight Plan',
               body: HomePage(),
               currentRoute: '/home',
+            ),
+        '/notifications': (context) => AppScaffold(
+              title: 'Notifications',
+              body: NotificationsScreen(
+                userId: FirebaseAuth.instance.currentUser?.uid ?? '',
+              ),
+              currentRoute: '/notifications',
             ),
       },
     );
