@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'services/api_token_service.dart';
 import 'services/service_locator.dart';
 import 'theme/app_theme.dart';
 import 'pages/login_page.dart';
 import 'pages/home_page.dart';
-import 'screens/notifications_screen.dart';
+import 'widgets/app_scaffold.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -20,7 +19,7 @@ void main() async {
 
   // Get the current user from Firebase Auth
   final currentUser = FirebaseAuth.instance.currentUser;
-  final initialRoute = (currentUser != null) ? '/notifications' : '/login';
+  final initialRoute = (currentUser != null) ? '/home' : '/login';
 
   runApp(MyApp(initialRoute: initialRoute));
 }
@@ -50,10 +49,12 @@ class _MyAppState extends State<MyApp> {
       initialRoute: widget.initialRoute,
       routes: {
         '/login': (context) => const LoginPage(),
-        '/home': (context) => HomePage(),
-        '/notifications': (context) => NotificationsScreen(
-          userId: FirebaseAuth.instance.currentUser?.uid ?? '',
-        ),
+        '/home':
+            (context) => AppScaffold(
+              title: 'Eagle Flight Plan',
+              body: HomePage(),
+              currentRoute: '/home',
+            ),
       },
     );
   }
