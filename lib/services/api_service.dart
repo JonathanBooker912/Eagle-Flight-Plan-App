@@ -20,9 +20,12 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> get(String endpoint) async {
+    final normalizedEndpoint = endpoint.startsWith('/') ? endpoint : '/$endpoint';
+    final normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
+    
     return _handleResponse(
       await _client.get(
-        Uri.parse('$baseUrl$endpoint'),
+        Uri.parse('$normalizedBaseUrl$normalizedEndpoint'),
         headers: await _getHeaders(),
       ),
     );
@@ -32,9 +35,12 @@ class ApiService {
     String endpoint,
     Map<String, dynamic> body,
   ) async {
+    final normalizedEndpoint = endpoint.startsWith('/') ? endpoint : '/$endpoint';
+    final normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
+    
     return _handleResponse(
       await _client.post(
-        Uri.parse('$baseUrl$endpoint'),
+        Uri.parse('$normalizedBaseUrl$normalizedEndpoint'),
         headers: await _getHeaders(),
         body: jsonEncode(body),
       ),
@@ -45,9 +51,12 @@ class ApiService {
     String endpoint,
     Map<String, dynamic> body,
   ) async {
+    final normalizedEndpoint = endpoint.startsWith('/') ? endpoint : '/$endpoint';
+    final normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
+    
     return _handleResponse(
       await _client.put(
-        Uri.parse('$baseUrl$endpoint'),
+        Uri.parse('$normalizedBaseUrl$normalizedEndpoint'),
         headers: await _getHeaders(),
         body: jsonEncode(body),
       ),
@@ -55,9 +64,12 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> delete(String endpoint) async {
+    final normalizedEndpoint = endpoint.startsWith('/') ? endpoint : '/$endpoint';
+    final normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
+    
     return _handleResponse(
       await _client.delete(
-        Uri.parse('$baseUrl$endpoint'),
+        Uri.parse('$normalizedBaseUrl$normalizedEndpoint'),
         headers: await _getHeaders(),
       ),
     );
@@ -77,5 +89,28 @@ class ApiService {
 
   void dispose() {
     _client.close();
+  }
+
+  Future<Map<String, dynamic>> getUser(String userId) async {
+    return await get('/user/${userId}');
+  }
+
+  Future<Map<String, dynamic>> getAllLinksForUser(String userId) async {
+    final response = await get('/user/${userId}/links');
+    return Map<String, dynamic>.from(response);
+  }
+
+  Future<Map<String, dynamic>> getStudentForUserId(String userId) async {
+    return await get('/students/user/${userId}');
+  }
+
+  Future<Map<String, dynamic>> getStrengthsForStudent(String studentId) async {
+    final response = await get('/strengths/student/$studentId');
+    return Map<String, dynamic>.from(response);
+  }
+
+  Future<Map<String, dynamic>> getBadgesForStudent(String studentId, int page, int pageSize) async {
+    final response = await get('/badges/student/$studentId?page=$page&pageSize=$pageSize');
+    return Map<String, dynamic>.from(response);
   }
 }
