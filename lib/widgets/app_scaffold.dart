@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../pages/home_page.dart';
 import '../pages/notification_page.dart';
+import '../pages/calendar_page.dart';
 import '../services/api_token_service.dart';
 import '../services/service_locator.dart';
 
@@ -59,7 +60,7 @@ class NavigationBar extends StatelessWidget {
         page = HomePage();
         break;
       case '/events':
-        page = Center(child: Text('Events Page'));
+        page = const CalendarPage();
         break;
       case '/qr':
         page = Center(child: Text('QR Code Page'));

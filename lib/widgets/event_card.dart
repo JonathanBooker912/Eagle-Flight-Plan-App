@@ -22,6 +22,7 @@ class EventCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8.0),
+      color: Theme.of(context).cardColor,
       child: InkWell(
         onTap: onTap,
         child: Padding(
@@ -35,7 +36,9 @@ class EventCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       event['name'],
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.white,
+                      ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -43,13 +46,13 @@ class EventCard extends StatelessWidget {
                     Row(
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.qr_code),
+                          icon: const Icon(Icons.qr_code, color: Colors.white),
                           onPressed: () {
                             // Handle QR code generation
                           },
                         ),
                         IconButton(
-                          icon: const Icon(Icons.people),
+                          icon: const Icon(Icons.people, color: Colors.white),
                           onPressed: () {
                             // Handle attendance
                           },
@@ -61,13 +64,17 @@ class EventCard extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 timeRange,
-                style: Theme.of(context).textTheme.bodyMedium,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.white,
+                ),
               ),
               if (event['description'] != null) ...[
                 const SizedBox(height: 8),
                 Text(
                   event['description'],
-                  style: Theme.of(context).textTheme.bodyMedium,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.white,
+                  ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -81,6 +88,10 @@ class EventCard extends StatelessWidget {
                       onPressed: () {
                         // Handle registration
                       },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.black,
+                      ),
                       child: const Text('Register'),
                     ),
                 ],

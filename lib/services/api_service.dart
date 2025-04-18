@@ -79,7 +79,30 @@ class ApiService {
     _client.close();
   }
 
-  Future<Map<String, dynamic>> getAllEvents(int page, int limit) async {
-    return await get('/api/events?page=$page&limit=$limit');
+  Future<Map<String, dynamic>> getAllEvents(
+    int page, 
+    int pageSize, {
+    String? searchQuery,
+    DateTime? startDate,
+    DateTime? endDate,
+    String? location,
+    List<String>? strengths,
+    String? sortAttribute,
+    String? sortDirection,
+  }) async {
+    final queryParams = {
+      'page': page.toString(),
+      'pageSize': pageSize.toString(),
+      if (searchQuery != null) 'searchQuery': searchQuery,
+      if (startDate != null) 'startDate': startDate.toIso8601String(),
+      if (endDate != null) 'endDate': endDate.toIso8601String(),
+      if (location != null) 'location': location,
+      if (strengths != null) 'strengths': strengths.join(','),
+      if (sortAttribute != null) 'sortAttribute': sortAttribute,
+      if (sortDirection != null) 'sortDirection': sortDirection,
+    };
+
+    final queryString = Uri(queryParameters: queryParams).query;
+    return await get('/event?$queryString');
   }
 }

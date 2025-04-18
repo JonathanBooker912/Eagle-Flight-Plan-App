@@ -14,26 +14,20 @@ class CalendarPage extends StatefulWidget {
 }
 
 class _CalendarPageState extends State<CalendarPage> {
-  late final ServiceLocator _serviceLocator;
   late DateTime _focusedDay;
   late DateTime _selectedDay;
   late DateTime _firstDay;
   late DateTime _lastDay;
-  late CalendarFormat _calendarFormat;
-  late List<DateTime> _selectedDates;
   late Map<DateTime, List<dynamic>> _events;
   late List<dynamic> _selectedEvents;
 
   @override
   void initState() {
     super.initState();
-    _serviceLocator = ServiceLocator();
     _focusedDay = DateTime.now();
     _selectedDay = DateTime.now();
     _firstDay = DateTime.now().subtract(const Duration(days: 365));
     _lastDay = DateTime.now().add(const Duration(days: 365));
-    _calendarFormat = CalendarFormat.month;
-    _selectedDates = [_selectedDay];
     _events = {};
     _selectedEvents = [];
     _loadEvents();
@@ -41,9 +35,9 @@ class _CalendarPageState extends State<CalendarPage> {
 
   Future<void> _loadEvents() async {
     try {
-      final result = await _serviceLocator.api.getAllEvents(1, 1000);
+      final result = await ServiceLocator().api.getAllEvents(1, 1000);
       setState(() {
-        _events = _groupEventsByDate(result.data.events);
+        _events = _groupEventsByDate(result['data'] ?? []);
         _selectedEvents = _getEventsForDay(_selectedDay);
       });
     } catch (error) {
@@ -78,82 +72,75 @@ class _CalendarPageState extends State<CalendarPage> {
     }
   }
 
-  void _onFormatChanged(CalendarFormat format) {
-    setState(() {
-      _calendarFormat = format;
-    });
-  }
-
-  void _onPageChanged(DateTime focusedDay) {
-    _focusedDay = focusedDay;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
           children: [
             // Calendar Card
-            Expanded(
-              flex: 2,
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          TextButton(
-                            onPressed: () {
-                              setState(() {
-                                _selectedDay = DateTime.now();
-                                _focusedDay = DateTime.now();
-                                _selectedEvents = _getEventsForDay(_selectedDay);
-                              });
-                            },
-                            child: const Text('Today'),
+            Card(
+              color: Theme.of(context).cardColor,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _selectedDay = DateTime.now();
+                              _focusedDay = DateTime.now();
+                              _selectedEvents = _getEventsForDay(_selectedDay);
+                            });
+                          },
+                          child: const Text(
+                            'Today',
+                            style: TextStyle(color: Colors.white),
                           ),
-                          TextButton(
-                            onPressed: () {
-                              setState(() {
-                                _calendarFormat = _calendarFormat == CalendarFormat.month
-                                    ? CalendarFormat.week
-                                    : CalendarFormat.month;
-                              });
-                            },
-                            child: Text(_calendarFormat == CalendarFormat.month ? 'Week' : 'Month'),
-                          ),
-                        ],
-                      ),
-                      TableCalendar(
-                        firstDay: _firstDay,
-                        lastDay: _lastDay,
-                        focusedDay: _focusedDay,
-                        selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-                        calendarFormat: _calendarFormat,
-                        eventLoader: (day) => _getEventsForDay(day),
-                        startingDayOfWeek: StartingDayOfWeek.sunday,
-                        calendarStyle: const CalendarStyle(
-                          outsideDaysVisible: false,
                         ),
-                        onDaySelected: _onDaySelected,
-                        onFormatChanged: _onFormatChanged,
-                        onPageChanged: _onPageChanged,
+                      ],
+                    ),
+                    TableCalendar(
+                      firstDay: _firstDay,
+                      lastDay: _lastDay,
+                      focusedDay: _focusedDay,
+                      selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+                      calendarFormat: CalendarFormat.month,
+                      eventLoader: (day) => _getEventsForDay(day),
+                      startingDayOfWeek: StartingDayOfWeek.sunday,
+                      calendarStyle: CalendarStyle(
+                        outsideDaysVisible: false,
+                        defaultTextStyle: const TextStyle(color: Colors.white),
+                        weekendTextStyle: const TextStyle(color: Colors.white),
+                        holidayTextStyle: const TextStyle(color: Colors.white),
+                        selectedTextStyle: const TextStyle(color: Colors.black),
+                        todayTextStyle: const TextStyle(color: Colors.white),
+                        disabledTextStyle: const TextStyle(color: Colors.grey),
+                        markerDecoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
                       ),
-                    ],
-                  ),
+                      headerStyle: const HeaderStyle(
+                        titleTextStyle: TextStyle(color: Colors.white),
+                        leftChevronIcon: Icon(Icons.chevron_left, color: Colors.white),
+                        rightChevronIcon: Icon(Icons.chevron_right, color: Colors.white),
+                      ),
+                      onDaySelected: _onDaySelected,
+                    ),
+                  ],
                 ),
               ),
             ),
-            const SizedBox(width: 16),
-            // Events List
+            const SizedBox(height: 16),
+            // Description Block
             Expanded(
-              flex: 3,
               child: Card(
+                color: Theme.of(context).cardColor,
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -161,13 +148,18 @@ class _CalendarPageState extends State<CalendarPage> {
                     children: [
                       Text(
                         'Events for ${DateFormat('MMMM d, y').format(_selectedDay)}',
-                        style: Theme.of(context).textTheme.titleLarge,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: Colors.white,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Expanded(
                         child: _selectedEvents.isEmpty
                             ? const Center(
-                                child: Text('No events for this date'),
+                                child: Text(
+                                  'No events for this date',
+                                  style: TextStyle(color: Colors.white),
+                                ),
                               )
                             : ListView.builder(
                                 itemCount: _selectedEvents.length,
