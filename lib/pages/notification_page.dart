@@ -158,6 +158,66 @@ class _NotificationPageState extends State<NotificationPage> {
     );
   }
 
+  void _showDeleteConfirmation() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Notifications'),
+        content: Text(
+          'Are you sure you want to delete ${_selectedNotifications.length} notification(s)?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteSelectedNotifications();
+            },
+            child: const Text(
+              'Delete',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteSelectedNotifications() async {
+    if (_selectedNotifications.isEmpty) return;
+
+    try {
+      await Future.wait(
+        _selectedNotifications.map((id) => _notificationService.deleteNotification(id)),
+      );
+      setState(() {
+        _notifications.removeWhere((n) => _selectedNotifications.contains(n.id));
+        _selectedNotifications.clear();
+      });
+      _showSuccess('Notifications deleted successfully');
+    } catch (e) {
+      print('Error deleting notifications: $e');
+      _showError('Unable to delete notifications. Please try again.');
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inHours < 24) {
+      if (difference.inHours == 0) {
+        return '${difference.inMinutes} minutes ago';
+      }
+      return '${difference.inHours} hours ago';
+    } else {
+      return DateFormat('MMM d, y').format(date);
+    }
+  }
+
   void _showNotificationDetails(NotificationModel notification) {
     if (!notification.read) {
       _markAsRead(notification);
@@ -244,24 +304,53 @@ class _NotificationPageState extends State<NotificationPage> {
     );
   }
 
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
-
-    if (difference.inHours < 24) {
-      if (difference.inHours == 0) {
-        return '${difference.inMinutes} minutes ago';
-      }
-      return '${difference.inHours} hours ago';
+  void _toggleNotificationSelection(NotificationModel notification) {
+    if (_selectedNotifications.contains(notification.id)) {
+      _selectedNotifications.remove(notification.id);
     } else {
-      return DateFormat('MMM d, y').format(date);
+      _selectedNotifications.add(notification.id);
     }
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     print('Building NotificationPage - isLoading: $_isLoading, notifications count: ${_notifications.length}');
     return Scaffold(
+      floatingActionButton: _selectedNotifications.isNotEmpty
+          ? FloatingActionButton(
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  builder: (context) => Container(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ListTile(
+                          leading: const Icon(Icons.delete, color: Colors.red),
+                          title: const Text('Delete Selected'),
+                          onTap: () {
+                            Navigator.pop(context);
+                            _showDeleteConfirmation();
+                          },
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.mark_email_read),
+                          title: const Text('Mark Selected as Read'),
+                          onTap: () {
+                            Navigator.pop(context);
+                            _markSelectedAsRead();
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+              child: const Icon(Icons.more_vert),
+            )
+          : null,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _notifications.isEmpty
@@ -312,7 +401,10 @@ class _NotificationPageState extends State<NotificationPage> {
                             final notification = _notifications[index];
                             return Dismissible(
                               key: Key(notification.id.toString()),
-                              direction: DismissDirection.startToEnd,
+                              direction: DismissDirection.startToEnd,  // Only allow left swipe
+                              dismissThresholds: const {
+                                DismissDirection.startToEnd: 0.25,  // Only need to swipe 25% to trigger read
+                              },
                               background: Container(
                                 color: const Color(0xFF2784BB),
                                 alignment: Alignment.centerLeft,
@@ -324,7 +416,7 @@ class _NotificationPageState extends State<NotificationPage> {
                               ),
                               confirmDismiss: (direction) async {
                                 _markAsRead(notification);
-                                return false;
+                                return false;  // Don't dismiss the notification
                               },
                               child: InkWell(
                                 onTap: () => _showNotificationDetails(notification),
@@ -378,5 +470,46 @@ class _NotificationPageState extends State<NotificationPage> {
                   ],
                 ),
     );
+  }
+
+  Future<void> _markSelectedAsRead() async {
+    try {
+      await Future.wait(
+        _selectedNotifications.map((id) => _notificationService.markAsRead(widget.userId, id)),
+      );
+      setState(() {
+        _notifications = _notifications.map((n) {
+          if (_selectedNotifications.contains(n.id)) {
+            return NotificationModel(
+              id: n.id,
+              header: n.header,
+              description: n.description,
+              actionLink: n.actionLink,
+              read: true,
+              createdAt: n.createdAt,
+              user: n.user,
+            );
+          }
+          return n;
+        }).toList();
+      });
+      _showSuccess('Notifications marked as read');
+    } catch (e) {
+      print('Error marking notifications as read: $e');
+      _showError('Unable to mark notifications as read. Please try again.');
+    }
+  }
+
+  Future<void> _deleteNotification(NotificationModel notification) async {
+    try {
+      await _notificationService.deleteNotification(notification.id);
+      setState(() {
+        _notifications.removeWhere((n) => n.id == notification.id);
+      });
+      _showSuccess('Notification deleted');
+    } catch (e) {
+      print('Error deleting notification: $e');
+      _showError('Unable to delete notification. Please try again.');
+    }
   }
 } 
