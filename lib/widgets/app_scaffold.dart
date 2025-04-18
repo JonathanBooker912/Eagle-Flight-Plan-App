@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import '../theme/app_theme.dart';
 import '../pages/flight_plan_page.dart';
+import '../pages/profile_page.dart';
 
 class AppScaffold extends StatelessWidget {
   final Widget body;
@@ -54,7 +55,7 @@ class NavigationBar extends StatelessWidget {
         page = Center(child: Text('Notifications Page'));
         break;
       case '/profile':
-        page = Center(child: Text('Profile Page'));
+        page = const ProfilePage();
         break;
       default:
         page = FlightPlanPage();
