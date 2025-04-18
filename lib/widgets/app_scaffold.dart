@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../pages/home_page.dart';
+import '../pages/profile_page.dart';
 
 class AppScaffold extends StatelessWidget {
   final Widget body;
@@ -53,7 +54,7 @@ class NavigationBar extends StatelessWidget {
         page = Center(child: Text('Notifications Page'));
         break;
       case '/profile':
-        page = Center(child: Text('Profile Page'));
+        page = ProfilePage();
         break;
       default:
         page = HomePage();
