@@ -74,4 +74,8 @@ class ApiService {
   void dispose() {
     _client.close();
   }
+
+  Future<Map<String, dynamic>> getAllEvents(int page, int limit) async {
+    return await get('/api/events?page=$page&limit=$limit');
+  }
 }
