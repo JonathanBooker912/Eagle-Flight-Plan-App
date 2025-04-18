@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import '../theme/app_theme.dart';
-import '../pages/flight_plan_page.dart';
-import '../pages/profile_page.dart';
+import '../pages/home_page.dart';
+import '../pages/notification_page.dart';
+import '../services/api_token_service.dart';
+import '../services/service_locator.dart';
 
 class AppScaffold extends StatelessWidget {
   final Widget body;
@@ -23,7 +24,7 @@ class AppScaffold extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       bottomNavigationBar: NavigationBar(currentRoute: currentRoute),
-      body: body,
+      body: Padding(padding: EdgeInsets.all(24), child: body),
     );
   }
 }
@@ -39,11 +40,23 @@ class NavigationBar extends StatelessWidget {
         : AppTheme.backgroundColor;
   }
 
-  void _navigateTo(BuildContext context, String route) {
+  Future<Map<String, dynamic>> _getAuthData() async {
+    final token = await TokenService.getToken();
+    if (token == null) {
+      throw Exception('No authentication token found');
+    }
+    // TODO: Get user ID from your user service or shared preferences
+    return {
+      'token': token,
+      'userId': 1, // Replace with actual user ID
+    };
+  }
+
+  void _navigateTo(BuildContext context, String route) async {
     Widget page;
     switch (route) {
       case '/home':
-        page = FlightPlanPage();
+        page = HomePage();
         break;
       case '/events':
         page = Center(child: Text('Events Page'));
@@ -52,13 +65,32 @@ class NavigationBar extends StatelessWidget {
         page = Center(child: Text('QR Code Page'));
         break;
       case '/notifications':
-        page = Center(child: Text('Notifications Page'));
+        try {
+          final authData = await _getAuthData();
+          page = NotificationPage(
+            userId: authData['userId'],
+          );
+        } catch (e) {
+          print('Error navigating to notifications: $e');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Please log in to view notifications'),
+              action: SnackBarAction(
+                label: 'Login',
+                onPressed: () {
+                  // TODO: Navigate to login page
+                },
+              ),
+            ),
+          );
+          return;
+        }
         break;
       case '/profile':
-        page = const ProfilePage();
+        page = Center(child: Text('Profile Page'));
         break;
       default:
-        page = FlightPlanPage();
+        page = HomePage();
     }
 
     Navigator.pushReplacement(
@@ -91,7 +123,7 @@ class NavigationBar extends StatelessWidget {
               IconButton(
                 onPressed: () => _navigateTo(context, '/home'),
                 icon: Icon(
-                  MdiIcons.bird,
+                  Icons.flight,
                   size: 32,
                   color: _getIconColor('/home'),
                 ),
