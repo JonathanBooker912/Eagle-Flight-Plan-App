@@ -1,0 +1,245 @@
+import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import '../theme/app_theme.dart';
+import '../services/api_session_storage.dart';
+import '../services/service_locator.dart';
+import '../models/flight_plan.dart';
+import '../models/semester.dart';
+import '../models/flight_plan_item.dart';
+import '../services/api_service.dart';
+import '../widgets/flight_plan_item_card.dart';
+import '../widgets/list_loader.dart';
+
+class FlightPlanPage extends StatefulWidget {
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
+
+  FlightPlanPage({super.key});
+
+  @override
+  State<FlightPlanPage> createState() => _FlightPlanPageState();
+}
+
+class _FlightPlanPageState extends State<FlightPlanPage> {
+  List<FlightPlan> _flightPlans = [];
+  Semester? _selectedSemester;
+  bool _isLoadingFlightPlans = true;
+  final ApiService _apiService = ApiService(baseUrl: 'YOUR_BASE_URL');
+
+  FlightPlan? get _selectedFlightPlan {
+    if (_selectedSemester == null) return null;
+    return _flightPlans.firstWhere(
+      (plan) => plan.semester.id == _selectedSemester!.id,
+      orElse: () => _flightPlans.first,
+    );
+  }
+
+  List<FlightPlanItem> get _sortedFlightPlanItems {
+    if (_selectedFlightPlan == null) return [];
+
+    // First, sort by status priority
+    final statusPriority = {'pending': 0, 'incomplete': 1, 'complete': 2};
+
+    return List.from(_selectedFlightPlan!.flightPlanItems)..sort((a, b) {
+      // First sort by status
+      final statusCompare = (statusPriority[a.status.toLowerCase()] ?? 0)
+          .compareTo(statusPriority[b.status.toLowerCase()] ?? 0);
+      if (statusCompare != 0) return statusCompare;
+
+      // If status is the same, sort by due date
+      return a.dueDate.compareTo(b.dueDate);
+    });
+  }
+
+  double get _completionPercentage {
+    if (_selectedFlightPlan == null ||
+        _selectedFlightPlan!.flightPlanItems.isEmpty) {
+      return 0.0;
+    }
+
+    final completedItems =
+        _selectedFlightPlan!.flightPlanItems
+            .where((item) => item.status.toLowerCase() == 'complete')
+            .length;
+
+    return completedItems / _selectedFlightPlan!.flightPlanItems.length;
+  }
+
+  String get _completionText {
+    final percentage = (_completionPercentage * 100).round();
+    return '$percentage%';
+  }
+
+  bool get _isLoading => _isLoadingFlightPlans;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchFlightPlans();
+  }
+
+  Future<void> _handleSignOut() async {
+    await ApiSessionStorage.clearSession();
+    await widget._googleSignIn.signOut();
+    Navigator.pushReplacementNamed(context, '/login');
+  }
+
+  Future<void> _fetchFlightPlans() async {
+    if (!mounted) return;
+
+    try {
+      final flightPlans = await ServiceLocator().flightPlan.getFlightPlans();
+      if (!mounted) return;
+
+      setState(() {
+        _flightPlans = flightPlans;
+        if (_flightPlans.isNotEmpty) {
+          _selectedSemester = _flightPlans.first.semester;
+        }
+        _isLoadingFlightPlans = false;
+      });
+    } catch (e) {
+      print(e);
+      if (!mounted) return;
+
+      setState(() {
+        _isLoadingFlightPlans = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error fetching flight plans: $e')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    double height = MediaQuery.of(context).viewPadding.top;
+
+    return Scaffold(
+      backgroundColor: AppTheme.backgroundColor,
+      body: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.fromLTRB(6, height + 4, 6, 6),
+            child: Card(
+              color: AppTheme.surfaceColor,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Flight Plan',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
+                        if (!_isLoadingFlightPlans)
+                          Row(
+                            children: [
+                              DropdownButton<Semester>(
+                                value: _selectedSemester,
+                                hint: Text(
+                                  'Select Semester',
+                                  style: TextStyle(color: AppTheme.textPrimary),
+                                ),
+                                dropdownColor: AppTheme.surfaceColor,
+                                style: TextStyle(color: AppTheme.textPrimary),
+                                underline: Container(
+                                  height: 0,
+                                  color: AppTheme.primaryColor,
+                                ),
+                                items:
+                                    _flightPlans.map((plan) {
+                                      return DropdownMenuItem<Semester>(
+                                        value: plan.semester,
+                                        child: Text(plan.semesterDisplayName),
+                                      );
+                                    }).toList(),
+                                onChanged: (Semester? newValue) {
+                                  setState(() {
+                                    _selectedSemester = newValue;
+                                  });
+                                },
+                              ),
+                            ],
+                          )
+                        else
+                          const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                    child: Row(
+                      children: [
+                        Text(
+                          _completionText,
+                          style: TextStyle(
+                            color: AppTheme.textPrimary,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: LinearProgressIndicator(
+                            value: _completionPercentage,
+                            backgroundColor: AppTheme.backgroundColor,
+                            borderRadius: BorderRadius.circular(10),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              AppTheme.primaryColor,
+                            ),
+                            minHeight: 8,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            child:
+                _isLoading
+                    ? const ListLoader()
+                    : _selectedFlightPlan == null
+                    ? const Center(child: Text('No flight plan selected'))
+                    : Scrollbar(
+                      thumbVisibility: true,
+                      thickness: 6,
+                      radius: const Radius.circular(10),
+                      child: ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        itemCount: _sortedFlightPlanItems.length,
+                        itemBuilder: (context, index) {
+                          final item = _sortedFlightPlanItems[index];
+                          return FlightPlanItemCard(item: item);
+                        },
+                      ),
+                    ),
+          ),
+        ],
+      ),
+    );
+  }
+}

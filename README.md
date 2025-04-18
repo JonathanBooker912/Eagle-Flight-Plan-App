@@ -7,7 +7,7 @@ A mobile app version of Career Service's Eagle Flight Plan system to provide stu
 1. Clone the repository
 2. Make sure you have been added to the firebase project
 3. Run `flutter pub get` to install dependencies
-4. Add the google-services.json from the [Firebase Console](https://console.firebase.google.com/u/1/project/eagleflightplanapp/settings/general/android:com.example.eagle_flight_plan_app)
+4. Add the google-services.json from the [Firebase Console](https://console.firebase.google.com/u/1/project/eagleflightplanapp/settings/general/android:com.example.eagle_flight_plan_app) under /android/app
 5. Add your SHA-1 fingerprint to the Firebase console:
 
 #### For Windows:

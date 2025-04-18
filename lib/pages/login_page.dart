@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../services/service_locator.dart';
 import '../theme/app_theme.dart';
-import '../services/api_token_service.dart';
+import '../services/api_session_storage.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -49,9 +49,7 @@ class _LoginPageState extends State<LoginPage> {
       );
       final idToken = await userCredential.user?.getIdToken();
 
-      final apiCredential = await _serviceLocator.auth.loginWithGoogle(idToken);
-
-      TokenService.saveToken(apiCredential['token']);
+      await _serviceLocator.auth.login(idToken);
 
       if (mounted) {
         Navigator.pushReplacementNamed(context, '/home');
