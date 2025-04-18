@@ -5,6 +5,9 @@ import '../widgets/badge_card.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../services/service_locator.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -14,41 +17,111 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  // Mock data - replace with actual API calls
-  final String fullName = "John Doe";
-  final String major = "Computer Science";
-  final String profileDescription = "I am a passionate student interested in software development and aviation.";
-  final String email = "john.doe@example.com";
-  
-  final List<Map<String, String>> links = [
-    {"websiteName": "LinkedIn", "link": "https://linkedin.com/in/johndoe"},
-    {"websiteName": "GitHub", "link": "https://github.com/johndoe"},
-    {"websiteName": "Portfolio", "link": "https://johndoe.com"},
-  ];
-
-  final List<Map<String, dynamic>> strengths = [
-    {"name": "Achiever", "description": "You work hard and possess a great deal of stamina."},
-    {"name": "Strategic", "description": "You create alternative ways to proceed."},
-    {"name": "Learner", "description": "You have a great desire to learn and want to continuously improve."},
-  ];
-
+  Map<String, dynamic>? user;
+  List<Map<String, dynamic>> strengths = [];
   List<Map<String, dynamic>> badges = [];
+  List<Map<String, dynamic>> links = [];
   bool isLoading = true;
   bool hasError = false;
   int currentPage = 1;
   int pageSize = 6;
   int totalPages = 1;
+  String? userId;
 
   @override
   void initState() {
     super.initState();
-    print('ProfilePage: initState called');
-    _fetchBadges();
+    _getUserId();
+  }
+
+  Future<void> _getUserId() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      setState(() {
+        userId = currentUser.uid;
+      });
+      _fetchUser();
+      _fetchBadges();
+      _fetchStrengths();
+      _fetchLinks();
+    } else {
+      // Handle no user case
+    }
+  }
+
+  Future<void> _fetchUser() async {
+    if (userId == null) return;
+    
+    
+    try {
+      final response = await ServiceLocator().api.getUser(userId!);
+
+      if (response != null) {
+        setState(() {
+          user = response;
+        });
+      } else {
+     
+        throw Exception('Invalid user response format');
+      }
+    } catch (e) {
+    }
+  }
+
+  Future<void> _fetchLinks() async {
+    if (userId == null) return;
+    
+    
+    try {
+      final response = await ServiceLocator().api.getAllLinksForUser(userId!);
+
+      if (response != null) {
+        setState(() {
+          links = List<Map<String, dynamic>>.from(response);
+        });
+      } else {
+        throw Exception('Invalid links response format');
+      }
+    } catch (e) {
+    }
+  }
+
+  Future<void> _fetchStrengths() async {
+    if (userId == null) return;
+    
+    try {
+      // First get the student ID for this user
+      final studentResponse = await ServiceLocator().api.getStudentForUserId(userId!);
+      if (studentResponse == null || !studentResponse.containsKey('id')) {
+        throw Exception('Could not find student for user');
+      }
+      
+      final studentId = studentResponse['id'].toString(); // Convert to string
+      
+      // Now get the strengths for this student
+      final response = await ServiceLocator().api.getStrengthsForStudent(studentId);
+      
+      if (response != null) {
+        setState(() {
+          // The response is directly the array of strengths
+          strengths = List<Map<String, dynamic>>.from(response);
+        });
+      } else {
+        throw Exception('Invalid strengths response format');
+      }
+    } catch (e) {
+      print('ProfilePage: Error fetching strengths: $e');
+      // Set strengths to empty list to show the "No Clifton Strengths" message
+      setState(() {
+        strengths = [];
+      });
+    }
   }
 
   Future<void> _fetchBadges() async {
-    print('ProfilePage: Starting to fetch badges');
-    print('ProfilePage: Current page: $currentPage, Page size: $pageSize');
+    if (userId == null) return;
+    
+  
     
     try {
       setState(() {
@@ -56,54 +129,20 @@ class _ProfilePageState extends State<ProfilePage> {
         hasError = false;
       });
 
-      // Get the auth token from storage
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
-      print('ProfilePage: Auth token found: ${token != null}');
+      final response = await ServiceLocator().api.getBadgesForStudent(userId!, currentPage, pageSize);
 
-      if (token == null) {
-        print('ProfilePage: No auth token found');
-        throw Exception('Authentication required');
-      }
-
-      final headers = {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      };
-
-      final url = 'https://flightplan.eaglesoftwareteam.com/flight-plan-t1/badge/student/1?page=$currentPage&pageSize=$pageSize';
-      print('ProfilePage: Making request to URL: $url with auth headers');
-
-      final response = await http.get(
-        Uri.parse(url),
-        headers: headers,
-      );
+      if (response != null && response['badges'] != null) {
+        setState(() {
+          badges = List<Map<String, dynamic>>.from(response['badges']);
+          totalPages = (response['total'] / pageSize).ceil();
+          isLoading = false;
+        });
       
-      print('ProfilePage: Response status code: ${response.statusCode}');
-      print('ProfilePage: Response body: ${response.body}');
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        print('ProfilePage: Decoded data: $data');
-        
-        if (data['badges'] != null) {
-          setState(() {
-            badges = List<Map<String, dynamic>>.from(data['badges']);
-            totalPages = (data['total'] / pageSize).ceil();
-            isLoading = false;
-          });
-          print('ProfilePage: Successfully loaded ${badges.length} badges');
-          print('ProfilePage: Total pages: $totalPages');
-        } else {
-          print('ProfilePage: Error - badges field is null in response');
-          throw Exception('Badges field is null in response');
-        }
       } else {
-        print('ProfilePage: Error - HTTP status code ${response.statusCode}');
-        throw Exception('Failed to load badges: HTTP ${response.statusCode}');
+       
+        throw Exception('Invalid response format');
       }
     } catch (e) {
-      print('ProfilePage: Error caught: $e');
       setState(() {
         hasError = true;
         isLoading = false;
@@ -122,14 +161,14 @@ class _ProfilePageState extends State<ProfilePage> {
           Card(
             color: const Color(0xFF1E1E1E), // backgroundDarken
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(12.0),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Profile Picture
                   Container(
-                    width: 100,
-                    height: 100,
+                    width: 80,
+                    height: 80,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       image: DecorationImage(
@@ -138,24 +177,25 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12),
                   // Profile Info
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          fullName,
+                          user?['fullName'] ?? 'Loading...',
                           style: const TextStyle(
-                            fontSize: 20,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
                         ),
+                        const SizedBox(height: 4),
                         Text(
-                          major,
+                          user?['major'] ?? '',
                           style: const TextStyle(
-                            fontSize: 16,
+                            fontSize: 14,
                             color: Colors.white,
                           ),
                         ),
@@ -163,14 +203,15 @@ class _ProfilePageState extends State<ProfilePage> {
                         const Text(
                           "About Me:",
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 16,
                             color: Colors.white,
                           ),
                         ),
+                        const SizedBox(height: 4),
                         Text(
-                          profileDescription,
+                          user?['profileDescription'] ?? '',
                           style: const TextStyle(
-                            fontSize: 18,
+                            fontSize: 14,
                             color: Colors.white,
                           ),
                         ),
@@ -181,52 +222,57 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
           
           // Contact Information
           Card(
             color: const Color(0xFF1E1E1E), // backgroundDarken
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(12.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
                     "Contact Information",
                     style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Email: $email",
-                    style: const TextStyle(
                       fontSize: 16,
                       color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 8),
+                  Text(
+                    "Email: ${user?['email'] ?? 'Loading...'}",
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   ...links.map((link) => Padding(
-                    padding: const EdgeInsets.only(bottom: 4.0),
+                    padding: const EdgeInsets.only(bottom: 2.0),
                     child: Row(
                       children: [
                         Text(
                           "${link['websiteName']}: ",
                           style: const TextStyle(
-                            fontSize: 16,
+                            fontSize: 14,
                             color: Colors.white,
                           ),
                         ),
                         GestureDetector(
-                          onTap: () {
-                            // Handle link tap
+                          onTap: () async {
+                            final url = Uri.parse(link['link']);
+                            try {
+                              if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+                              }
+                            } catch (e) {
+                            }
                           },
                           child: Text(
-                            link['link']!,
+                            link['link'],
                             style: const TextStyle(
-                              fontSize: 16,
-                              color: Colors.white,
+                              fontSize: 14,
+                              color: Colors.blue,
                               decoration: TextDecoration.underline,
                             ),
                           ),
@@ -238,20 +284,20 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
 
           // Badges Section
           Card(
             color: const Color(0xFF1E1E1E), // backgroundDarken
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(12.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
                     "Badges",
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 16,
                       color: Colors.white,
                     ),
                   ),
@@ -281,13 +327,14 @@ class _ProfilePageState extends State<ProfilePage> {
                               color: Colors.white,
                             ),
                           ),
+                          SizedBox(height: 4),
                           Text(
                             "Complete some flight plan items to be rewarded!",
                             style: TextStyle(
                               color: Colors.white,
                             ),
                           ),
-                          SizedBox(height: 8),
+                          SizedBox(height: 4),
                           Text(
                             "The LORD repay you for what you have done, and a full reward be given you by the LORD, the God of Israel, under whose wings you have come to take refuge!",
                             textAlign: TextAlign.center,
@@ -296,6 +343,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               fontStyle: FontStyle.italic,
                             ),
                           ),
+                          SizedBox(height: 2),
                           Text(
                             "- Ruth 2:12",
                             textAlign: TextAlign.center,
@@ -316,8 +364,8 @@ class _ProfilePageState extends State<ProfilePage> {
                           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
                             childAspectRatio: 1.0,
-                            crossAxisSpacing: 8.0,
-                            mainAxisSpacing: 8.0,
+                            crossAxisSpacing: 4.0,
+                            mainAxisSpacing: 4.0,
                           ),
                           itemCount: badges.length,
                           itemBuilder: (context, index) {
@@ -327,7 +375,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         if (totalPages > 1)
                           Padding(
-                            padding: const EdgeInsets.only(top: 16.0),
+                            padding: const EdgeInsets.only(top: 8.0),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -376,20 +424,20 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
 
           // Strengths Section
           Card(
             color: const Color(0xFF1E1E1E), // backgroundDarken
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(12.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
                     "Clifton Strengths",
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 16,
                       color: Colors.white,
                     ),
                   ),
@@ -404,13 +452,14 @@ class _ProfilePageState extends State<ProfilePage> {
                               color: Colors.white,
                             ),
                           ),
+                          SizedBox(height: 4),
                           Text(
                             "Contact Charlotte Hamil to change this!",
                             style: TextStyle(
                               color: Colors.white,
                             ),
                           ),
-                          SizedBox(height: 8),
+                          SizedBox(height: 4),
                           Text(
                             "Before I formed you in the womb I knew you, and before you were born I consecrated you; I appointed you a prophet to the nations.",
                             textAlign: TextAlign.center,
@@ -419,6 +468,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               fontStyle: FontStyle.italic,
                             ),
                           ),
+                          SizedBox(height: 2),
                           Text(
                             "- Jeremiah 1:5",
                             textAlign: TextAlign.center,
@@ -436,7 +486,10 @@ class _ProfilePageState extends State<ProfilePage> {
                       physics: NeverScrollableScrollPhysics(),
                       itemCount: strengths.length,
                       itemBuilder: (context, index) {
-                        return StrengthCard(strength: strengths[index]);
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 4.0),
+                          child: StrengthCard(strength: strengths[index]),
+                        );
                       },
                     ),
                 ],

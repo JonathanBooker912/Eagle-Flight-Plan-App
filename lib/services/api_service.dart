@@ -17,7 +17,7 @@ class ApiService {
     return headers;
   }
 
-  Future<Map<String, dynamic>> get(String endpoint) async {
+  Future<dynamic> get(String endpoint) async {
     return _handleResponse(
       await _client.get(
         Uri.parse('$baseUrl$endpoint'),
@@ -61,9 +61,10 @@ class ApiService {
     );
   }
 
-  Map<String, dynamic> _handleResponse(http.Response response) {
+  dynamic _handleResponse(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) {
-      return jsonDecode(response.body);
+      final decoded = jsonDecode(response.body);
+      return decoded;
     } else {
       throw Exception(
         'API request failed with status ${response.statusCode}: ${response.body}',
@@ -73,5 +74,59 @@ class ApiService {
 
   void dispose() {
     _client.close();
+  }
+
+  Future<dynamic> getStudentForUserId(String userId) async {
+    final endpoint = '/students/user/$userId';
+    print('ApiService: Fetching student for user ID: $userId');
+    try {
+      final response = await get(endpoint);
+      print('ApiService: Student response: $response');
+      return response;
+    } catch (e) {
+      print('ApiService: Error fetching student: $e');
+      rethrow;
+    }
+  }
+
+  Future<dynamic> getStrengthsForStudent(String studentId) async {
+    final endpoint = '/strengths/student/$studentId';
+    print('ApiService: Fetching strengths for student ID: $studentId');
+    try {
+      final response = await get(endpoint);
+      print('ApiService: Strengths response: $response');
+      return response;
+    } catch (e) {
+      print('ApiService: Error fetching strengths: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<dynamic>> getAllLinksForUser(String userId) async {
+    final endpoint = '/link/user/$userId';
+    final response = await _client.get(
+      Uri.parse('$baseUrl$endpoint'),
+      headers: await _getHeaders(),
+    );
+    
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception(
+        'API request failed with status ${response.statusCode}: ${response.body}',
+      );
+    }
+  }
+
+  Future<Map<String, dynamic>> getUser(String userId) async {
+    final endpoint = '/user/$userId';
+    final response = await get(endpoint);
+    return Map<String, dynamic>.from(response);
+  }
+
+  Future<Map<String, dynamic>> getBadgesForStudent(String studentId, int page, int pageSize) async {
+    final endpoint = '/badge/student/$studentId?page=$page&pageSize=$pageSize';
+    final response = await get(endpoint);
+    return Map<String, dynamic>.from(response);
   }
 }
