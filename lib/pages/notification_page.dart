@@ -373,7 +373,7 @@ class _NotificationPageState extends State<NotificationPage> {
                       padding: const EdgeInsets.all(16.0),
                       child: Text(
                         'Inbox',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 24,
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
