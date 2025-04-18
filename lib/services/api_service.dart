@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'api_token_service.dart';
+import 'api_session_storage.dart';
 
 class ApiService {
   final String baseUrl;
@@ -9,15 +9,17 @@ class ApiService {
   ApiService({required this.baseUrl});
 
   Future<Map<String, String>> _getHeaders() async {
-    final token = await TokenService.getToken();
+    final token = (await ApiSessionStorage.getSession()).token;
     final headers = {'Content-Type': 'application/json'};
-    if (token != null) {
+
+    if (token != "") {
       headers['Authorization'] = 'Bearer $token';
     }
+
     return headers;
   }
 
-  Future<dynamic> get(String endpoint) async {
+  Future<Map<String, dynamic>> get(String endpoint) async {
     return _handleResponse(
       await _client.get(
         Uri.parse('$baseUrl$endpoint'),
@@ -61,10 +63,11 @@ class ApiService {
     );
   }
 
-  dynamic _handleResponse(http.Response response) {
+  Map<String, dynamic> _handleResponse(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) {
-      final decoded = jsonDecode(response.body);
-      return decoded;
+      final data = jsonDecode(response.body);
+      if (data is List) return {"data": data};
+      return data;
     } else {
       throw Exception(
         'API request failed with status ${response.statusCode}: ${response.body}',
@@ -74,59 +77,5 @@ class ApiService {
 
   void dispose() {
     _client.close();
-  }
-
-  Future<dynamic> getStudentForUserId(String userId) async {
-    final endpoint = '/students/user/$userId';
-    print('ApiService: Fetching student for user ID: $userId');
-    try {
-      final response = await get(endpoint);
-      print('ApiService: Student response: $response');
-      return response;
-    } catch (e) {
-      print('ApiService: Error fetching student: $e');
-      rethrow;
-    }
-  }
-
-  Future<dynamic> getStrengthsForStudent(String studentId) async {
-    final endpoint = '/strengths/student/$studentId';
-    print('ApiService: Fetching strengths for student ID: $studentId');
-    try {
-      final response = await get(endpoint);
-      print('ApiService: Strengths response: $response');
-      return response;
-    } catch (e) {
-      print('ApiService: Error fetching strengths: $e');
-      rethrow;
-    }
-  }
-
-  Future<List<dynamic>> getAllLinksForUser(String userId) async {
-    final endpoint = '/link/user/$userId';
-    final response = await _client.get(
-      Uri.parse('$baseUrl$endpoint'),
-      headers: await _getHeaders(),
-    );
-    
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception(
-        'API request failed with status ${response.statusCode}: ${response.body}',
-      );
-    }
-  }
-
-  Future<Map<String, dynamic>> getUser(String userId) async {
-    final endpoint = '/user/$userId';
-    final response = await get(endpoint);
-    return Map<String, dynamic>.from(response);
-  }
-
-  Future<Map<String, dynamic>> getBadgesForStudent(String studentId, int page, int pageSize) async {
-    final endpoint = '/badge/student/$studentId?page=$page&pageSize=$pageSize';
-    final response = await get(endpoint);
-    return Map<String, dynamic>.from(response);
   }
 }

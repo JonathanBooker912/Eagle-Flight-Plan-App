@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import '../theme/app_theme.dart';
-import '../pages/home_page.dart';
+import '../pages/flight_plan_page.dart';
 import '../pages/profile_page.dart';
 
 class AppScaffold extends StatelessWidget {
@@ -22,7 +23,7 @@ class AppScaffold extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       bottomNavigationBar: NavigationBar(currentRoute: currentRoute),
-      body: Padding(padding: EdgeInsets.all(24), child: body),
+      body: body,
     );
   }
 }
@@ -42,7 +43,7 @@ class NavigationBar extends StatelessWidget {
     Widget page;
     switch (route) {
       case '/home':
-        page = HomePage();
+        page = FlightPlanPage();
         break;
       case '/events':
         page = Center(child: Text('Events Page'));
@@ -54,10 +55,10 @@ class NavigationBar extends StatelessWidget {
         page = Center(child: Text('Notifications Page'));
         break;
       case '/profile':
-        page = ProfilePage();
+        page = const ProfilePage();
         break;
       default:
-        page = HomePage();
+        page = FlightPlanPage();
     }
 
     Navigator.pushReplacement(
@@ -90,7 +91,7 @@ class NavigationBar extends StatelessWidget {
               IconButton(
                 onPressed: () => _navigateTo(context, '/home'),
                 icon: Icon(
-                  Icons.flight,
+                  MdiIcons.bird,
                   size: 32,
                   color: _getIconColor('/home'),
                 ),
