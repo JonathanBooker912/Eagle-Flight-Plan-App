@@ -13,10 +13,7 @@ class NotificationResponse {
 }
 
 class NotificationService {
-  final String baseUrl;
-  final String token;
-
-  NotificationService({required this.baseUrl, required this.token});
+  NotificationService();
 
   Future<NotificationResponse> getNotificationsForUser(int userId, {int page = 1, int pageSize = 14}) async {
     print('Fetching notifications for user $userId, page $page');

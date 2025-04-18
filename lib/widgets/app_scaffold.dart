@@ -67,11 +67,8 @@ class NavigationBar extends StatelessWidget {
       case '/notifications':
         try {
           final authData = await _getAuthData();
-          final serviceLocator = ServiceLocator();
           page = NotificationPage(
             userId: authData['userId'],
-            token: authData['token'],
-            baseUrl: serviceLocator.baseUrl,
           );
         } catch (e) {
           // Show error message and redirect to login if not authenticated
