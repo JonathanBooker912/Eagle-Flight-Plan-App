@@ -1,18 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import '../theme/app_theme.dart';
-import '../services/api_session_storage.dart';
 import '../services/service_locator.dart';
 import '../models/flight_plan.dart';
 import '../models/semester.dart';
 import '../models/flight_plan_item.dart';
-import '../services/api_service.dart';
 import '../widgets/flight_plan_item_card.dart';
 import '../widgets/list_loader.dart';
 
 class FlightPlanPage extends StatefulWidget {
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
-
   FlightPlanPage({super.key});
 
   @override
@@ -23,7 +18,6 @@ class _FlightPlanPageState extends State<FlightPlanPage> {
   List<FlightPlan> _flightPlans = [];
   Semester? _selectedSemester;
   bool _isLoadingFlightPlans = true;
-  final ApiService _apiService = ApiService(baseUrl: 'YOUR_BASE_URL');
 
   FlightPlan? get _selectedFlightPlan {
     if (_selectedSemester == null) return null;
@@ -75,12 +69,6 @@ class _FlightPlanPageState extends State<FlightPlanPage> {
   void initState() {
     super.initState();
     _fetchFlightPlans();
-  }
-
-  Future<void> _handleSignOut() async {
-    await ApiSessionStorage.clearSession();
-    await widget._googleSignIn.signOut();
-    Navigator.pushReplacementNamed(context, '/login');
   }
 
   Future<void> _fetchFlightPlans() async {
