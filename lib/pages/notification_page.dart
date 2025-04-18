@@ -30,7 +30,6 @@ class _NotificationPageState extends State<NotificationPage> {
   @override
   void initState() {
     super.initState();
-    print('NotificationPage initState - userId: ${widget.userId}');
     _notificationService = NotificationService();
     _loadNotifications();
     _scrollController.addListener(_onScroll);
@@ -45,21 +44,18 @@ class _NotificationPageState extends State<NotificationPage> {
   void _onScroll() {
     if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
       if (!_isLoadingMore && _hasMore && _currentPage < _totalPages) {
-        print('Reached bottom, loading more notifications');
         _loadMoreNotifications();
       }
     }
   }
 
   Future<void> _loadNotifications() async {
-    print('Loading initial notifications');
     try {
       final response = await _notificationService.getNotificationsForUser(
         widget.userId,
         page: _currentPage,
         pageSize: _pageSize,
       );
-      print('Received ${response.notifications.length} notifications');
       setState(() {
         _notifications = response.notifications;
         _totalPages = response.totalPages;
@@ -67,7 +63,6 @@ class _NotificationPageState extends State<NotificationPage> {
         _isLoading = false;
       });
     } catch (e) {
-      print('Error loading notifications: $e');
       setState(() {
         _isLoading = false;
       });
@@ -78,7 +73,6 @@ class _NotificationPageState extends State<NotificationPage> {
   Future<void> _loadMoreNotifications() async {
     if (_isLoadingMore || !_hasMore) return;
 
-    print('Loading more notifications, page ${_currentPage + 1}');
     setState(() {
       _isLoadingMore = true;
     });
@@ -91,7 +85,6 @@ class _NotificationPageState extends State<NotificationPage> {
         pageSize: _pageSize,
       );
 
-      print('Received ${response.notifications.length} more notifications');
       setState(() {
         _notifications.addAll(response.notifications);
         _currentPage = nextPage;
@@ -100,7 +93,6 @@ class _NotificationPageState extends State<NotificationPage> {
         _isLoadingMore = false;
       });
     } catch (e) {
-      print('Error loading more notifications: $e');
       setState(() {
         _isLoadingMore = false;
       });
@@ -109,7 +101,6 @@ class _NotificationPageState extends State<NotificationPage> {
   }
 
   Future<void> _markAsRead(NotificationModel notification) async {
-    print('Marking notification ${notification.id} as read');
     try {
       await _notificationService.markAsRead(widget.userId, notification.id);
       setState(() {
@@ -129,13 +120,11 @@ class _NotificationPageState extends State<NotificationPage> {
         }).toList();
       });
     } catch (e) {
-      print('Error marking notification as read: $e');
       _showError('Unable to mark notification as read. Please try again.');
     }
   }
 
   void _showError(String message) {
-    print('Showing error: $message');
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -199,7 +188,6 @@ class _NotificationPageState extends State<NotificationPage> {
       });
       _showSuccess('Notifications deleted successfully');
     } catch (e) {
-      print('Error deleting notifications: $e');
       _showError('Unable to delete notifications. Please try again.');
     }
   }
@@ -315,7 +303,6 @@ class _NotificationPageState extends State<NotificationPage> {
 
   @override
   Widget build(BuildContext context) {
-    print('Building NotificationPage - isLoading: $_isLoading, notifications count: ${_notifications.length}');
     return Scaffold(
       floatingActionButton: _selectedNotifications.isNotEmpty
           ? FloatingActionButton(
@@ -376,7 +363,6 @@ class _NotificationPageState extends State<NotificationPage> {
                     Expanded(
                       child: RefreshIndicator(
                         onRefresh: () async {
-                          print('Refreshing notifications');
                           setState(() {
                             _currentPage = 1;
                             _hasMore = true;
@@ -495,7 +481,6 @@ class _NotificationPageState extends State<NotificationPage> {
       });
       _showSuccess('Notifications marked as read');
     } catch (e) {
-      print('Error marking notifications as read: $e');
       _showError('Unable to mark notifications as read. Please try again.');
     }
   }
@@ -508,7 +493,6 @@ class _NotificationPageState extends State<NotificationPage> {
       });
       _showSuccess('Notification deleted');
     } catch (e) {
-      print('Error deleting notification: $e');
       _showError('Unable to delete notification. Please try again.');
     }
   }
