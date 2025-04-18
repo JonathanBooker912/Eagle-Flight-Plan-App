@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'services/service_locator.dart';
 import 'theme/app_theme.dart';
 import 'pages/login_page.dart';
-import 'pages/home_page.dart';
+import 'pages/flight_plan_page.dart';
 import 'widgets/app_scaffold.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -52,7 +52,7 @@ class _MyAppState extends State<MyApp> {
         '/home':
             (context) => AppScaffold(
               title: 'Eagle Flight Plan',
-              body: HomePage(),
+              body: FlightPlanPage(),
               currentRoute: '/home',
             ),
       },
