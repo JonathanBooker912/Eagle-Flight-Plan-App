@@ -6,12 +6,14 @@ import '../services/api_token_service.dart';
 import '../pages/flight_plan_page.dart';
 import '../pages/profile_page.dart';
 import '../pages/calendar_page.dart';
+import '../pages/check_in_page.dart';
 
 class AppScaffold extends StatelessWidget {
   final Widget body;
   final String? title;
   final List<Widget>? actions;
   final String currentRoute;
+  final bool stackNavigationBar;
 
   const AppScaffold({
     super.key,
@@ -19,14 +21,28 @@ class AppScaffold extends StatelessWidget {
     this.title,
     this.actions,
     required this.currentRoute,
+    this.stackNavigationBar = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
-      bottomNavigationBar: NavigationBar(currentRoute: currentRoute),
-      body: body,
+      bottomNavigationBar:
+          stackNavigationBar ? null : NavigationBar(currentRoute: currentRoute),
+      body: stackNavigationBar
+          ? Stack(
+              children: [
+                body,
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: NavigationBar(currentRoute: currentRoute),
+                ),
+              ],
+            )
+          : body,
     );
   }
 }
@@ -64,7 +80,7 @@ class NavigationBar extends StatelessWidget {
         page = CalendarPage();
         break;
       case '/qr':
-        page = Center(child: Text('QR Code Page'));
+        page = EventCheckInPage();
         break;
       case '/notifications':
         try {
@@ -102,6 +118,7 @@ class NavigationBar extends StatelessWidget {
           title: route.substring(1).toUpperCase(),
           body: page,
           currentRoute: route,
+          stackNavigationBar: route == '/qr',
         ),
         transitionDuration: Duration.zero,
         reverseTransitionDuration: Duration.zero,
