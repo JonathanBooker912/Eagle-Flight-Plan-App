@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../pages/home_page.dart';
+import '../pages/notification_page.dart';
+import '../services/api_token_service.dart';
+import '../services/service_locator.dart';
 
 class AppScaffold extends StatelessWidget {
   final Widget body;
@@ -37,7 +40,19 @@ class NavigationBar extends StatelessWidget {
         : AppTheme.backgroundColor;
   }
 
-  void _navigateTo(BuildContext context, String route) {
+  Future<Map<String, dynamic>> _getAuthData() async {
+    final token = await TokenService.getToken();
+    if (token == null) {
+      throw Exception('No authentication token found');
+    }
+    // TODO: Get user ID from your user service or shared preferences
+    return {
+      'token': token,
+      'userId': 1, // Replace with actual user ID
+    };
+  }
+
+  void _navigateTo(BuildContext context, String route) async {
     Widget page;
     switch (route) {
       case '/home':
@@ -50,7 +65,29 @@ class NavigationBar extends StatelessWidget {
         page = Center(child: Text('QR Code Page'));
         break;
       case '/notifications':
-        page = Center(child: Text('Notifications Page'));
+        try {
+          final authData = await _getAuthData();
+          final serviceLocator = ServiceLocator();
+          page = NotificationPage(
+            userId: authData['userId'],
+            token: authData['token'],
+            baseUrl: serviceLocator.baseUrl,
+          );
+        } catch (e) {
+          // Show error message and redirect to login if not authenticated
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Please log in to view notifications'),
+              action: SnackBarAction(
+                label: 'Login',
+                onPressed: () {
+                  // TODO: Navigate to login page
+                },
+              ),
+            ),
+          );
+          return;
+        }
         break;
       case '/profile':
         page = Center(child: Text('Profile Page'));
