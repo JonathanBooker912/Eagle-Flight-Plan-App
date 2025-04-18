@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'api_token_service.dart';
+import 'api_session_storage.dart';
 
 class ApiService {
   final String baseUrl;
@@ -9,11 +9,13 @@ class ApiService {
   ApiService({required this.baseUrl});
 
   Future<Map<String, String>> _getHeaders() async {
-    final token = await TokenService.getToken();
+    final token = (await ApiSessionStorage.getSession()).token;
     final headers = {'Content-Type': 'application/json'};
-    if (token != null) {
+
+    if (token != "") {
       headers['Authorization'] = 'Bearer $token';
     }
+
     return headers;
   }
 
@@ -63,7 +65,9 @@ class ApiService {
 
   Map<String, dynamic> _handleResponse(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) {
-      return jsonDecode(response.body);
+      final data = jsonDecode(response.body);
+      if (data is List) return {"data": data};
+      return data;
     } else {
       throw Exception(
         'API request failed with status ${response.statusCode}: ${response.body}',
