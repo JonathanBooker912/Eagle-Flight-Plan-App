@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import 'dart:convert';
 import '../models/event.dart';
 import 'service_locator.dart';
@@ -72,3 +73,33 @@ class EventService {
     }
   }
 } 
+=======
+import 'api_service.dart';
+import '../models/event.dart';
+import '../services/api_session_storage.dart';
+
+class EventService extends ApiService {
+  EventService({required super.baseUrl});
+
+  Future<Event> lookupEvent(String checkInCode) async {
+    final response = await get('/event/token/$checkInCode');
+    return Event.fromJson(response);
+  }
+
+  Future<void> checkIn(int eventId, String checkInCode) async {
+    final studentId = (await ApiSessionStorage.getSession()).studentId;
+    final response = await post(
+        '/event/$eventId/check-in/$studentId', {"token": checkInCode});
+
+    if (response['error'] != null) {
+      if (response['error']
+          .toString()
+          .toLowerCase()
+          .contains('already checked in')) {
+        throw Exception('You have already checked in to this event');
+      }
+      throw Exception(response['error']);
+    }
+  }
+}
+>>>>>>> a9b969c (Did some things)

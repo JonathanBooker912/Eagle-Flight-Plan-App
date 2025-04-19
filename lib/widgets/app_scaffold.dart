@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import '../theme/app_theme.dart';
-import '../pages/notification_page.dart';
-import '../services/api_token_service.dart';
 import '../pages/flight_plan_page.dart';
+<<<<<<< HEAD
 import '../pages/profile_page.dart';
 import '../pages/calendar_page.dart';
+=======
+>>>>>>> a9b969c (Did some things)
 import '../pages/check_in_page.dart';
 
 class AppScaffold extends StatelessWidget {
@@ -58,19 +59,7 @@ class NavigationBar extends StatelessWidget {
         : AppTheme.backgroundColor;
   }
 
-  Future<Map<String, dynamic>> _getAuthData() async {
-    final token = await TokenService.getToken();
-    if (token == null) {
-      throw Exception('No authentication token found');
-    }
-    // TODO: Get user ID from your user service or shared preferences
-    return {
-      'token': token,
-      'userId': 1, // Replace with actual user ID
-    };
-  }
-
-  void _navigateTo(BuildContext context, String route) async {
+  void _navigateTo(BuildContext context, String route) {
     Widget page;
     switch (route) {
       case '/home':
@@ -80,32 +69,13 @@ class NavigationBar extends StatelessWidget {
         page = CalendarPage();
         break;
       case '/qr':
-        page = EventCheckInPage();
+        page = const EventCheckInPage();
         break;
       case '/notifications':
-        try {
-          final authData = await _getAuthData();
-          page = NotificationPage(
-            userId: authData['userId'],
-          );
-        } catch (e) {
-          print('Error navigating to notifications: $e');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Please log in to view notifications'),
-              action: SnackBarAction(
-                label: 'Login',
-                onPressed: () {
-                  // TODO: Navigate to login page
-                },
-              ),
-            ),
-          );
-          return;
-        }
+        page = Center(child: Text('Notifications Page'));
         break;
       case '/profile':
-        page = ProfilePage();
+        page = Center(child: Text('Profile Page'));
         break;
       default:
         page = FlightPlanPage();
@@ -129,12 +99,12 @@ class NavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       child: Card(
         elevation: 0,
         color: AppTheme.secondaryColor,
         child: Padding(
-          padding: const EdgeInsets.all(6),
+          padding: EdgeInsets.all(6),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
