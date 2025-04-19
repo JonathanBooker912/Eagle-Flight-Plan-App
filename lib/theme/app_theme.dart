@@ -8,6 +8,7 @@ class AppTheme {
 
   // Neutral colors
   static const Color backgroundColor = Color(0xFF42444C);
+  static const Color backgroundDarken = Color(0xFF32343A);
   static const Color surfaceColor = Color(0xFF32343A);
   static const Color errorColor = Color(0xFFE04125);
 
