@@ -39,6 +39,7 @@ class EventModel {
 =======
 import 'package:intl/intl.dart';
 import 'flight_plan_item.dart';
+import 'experience.dart';
 
 class EventNotFoundException implements Exception {
   final String message;
@@ -55,7 +56,7 @@ class Event {
   final DateTime startTime;
   final DateTime endTime;
   final String description;
-  final List<FlightPlanItem> fulfillableItems;
+  late List<FlightPlanItem> fulfillableItems;
 
   Event({
     required this.id,
@@ -69,18 +70,14 @@ class Event {
 
   factory Event.fromJson(Map<String, dynamic> json) {
     return Event(
-      id: json['eventId'] as int,
-      name: json['eventName'] as String,
+      id: json['id'] as int,
+      name: json['name'] as String,
       location: json['location'] ?? '',
       startTime:
           DateTime.parse(json['startTime'] ?? DateTime.now().toIso8601String()),
       endTime:
           DateTime.parse(json['endTime'] ?? DateTime.now().toIso8601String()),
       description: json['description'] ?? '',
-      fulfillableItems: (json['fulfillableFlightPlanItems'] as List?)
-              ?.map((item) => FlightPlanItem.fromJson(item))
-              .toList() ??
-          [],
     );
   }
 
@@ -92,6 +89,39 @@ class Event {
   String get formattedTimeRange {
     final timeFormatter = DateFormat('h:mm a');
     return '${timeFormatter.format(startTime)} - ${timeFormatter.format(endTime)}';
+  }
+
+  void setFulfillableItemsFromJson(List<dynamic> jsonItems) {
+    fulfillableItems = jsonItems
+        .map((item) => FlightPlanItem(
+              id: item['id'] as int,
+              flightPlanItemType: 'experience',
+              status: item['status'] as String,
+              dueDate: DateTime.parse(item['dueDate'] as String),
+              name: item['name'] as String,
+              createdAt: DateTime.now(),
+              updatedAt: DateTime.now(),
+              flightPlanId: 0,
+              experienceId:
+                  (item['experience'] as Map<String, dynamic>?)?['id'] as int?,
+              experience: item['experience'] != null
+                  ? Experience(
+                      id: item['experience']['id'] as int,
+                      category: 'Event',
+                      experienceType: 'Automatic',
+                      reflectionRequired: false,
+                      schedulingType: 'special event',
+                      semestersFromGrad: 0,
+                      description: item['experience']['description'] as String,
+                      name: item['experience']['name'] as String,
+                      rationale: 'Event check-in',
+                      points: item['experience']['points'] as int,
+                      createdAt: DateTime.now(),
+                      updatedAt: DateTime.now(),
+                    )
+                  : null,
+            ))
+        .toList();
   }
 }
 >>>>>>> a9b969c (Did some things)

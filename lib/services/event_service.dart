@@ -76,14 +76,27 @@ class EventService {
 =======
 import 'api_service.dart';
 import '../models/event.dart';
+import '../models/flight_plan_item.dart';
 import '../services/api_session_storage.dart';
 
 class EventService extends ApiService {
   EventService({required super.baseUrl});
 
   Future<Event> lookupEvent(String checkInCode) async {
+    final studentId = (await ApiSessionStorage.getSession()).studentId;
     final response = await get('/event/token/$checkInCode');
-    return Event.fromJson(response);
+    final eventData = Event.fromJson(response);
+    try {
+      final flightPlanItems = await get(
+          '/event/${eventData.id}/fulfillableFlightPlanItems/$studentId');
+      print(flightPlanItems);
+      eventData.setFulfillableItemsFromJson(
+          flightPlanItems['fulfillableFlightPlanItems'] as List);
+    } catch (e) {
+      print(e);
+    }
+    print(eventData.fulfillableItems);
+    return eventData;
   }
 
   Future<void> checkIn(int eventId, String checkInCode) async {
