@@ -6,11 +6,8 @@ import '../theme/app_theme.dart';
 import '../services/api_session_storage.dart';
 
 class CalendarPage extends StatefulWidget {
-  final int userId;
-
   const CalendarPage({
     Key? key,
-    required this.userId,
   }) : super(key: key);
 
   @override
@@ -18,6 +15,7 @@ class CalendarPage extends StatefulWidget {
 }
 
 class _CalendarPageState extends State<CalendarPage> {
+  late int _userId;
   late EventService _eventService;
   List<EventModel> _events = [];
   bool _isLoading = true;
@@ -29,8 +27,13 @@ class _CalendarPageState extends State<CalendarPage> {
   @override
   void initState() {
     super.initState();
-    print('CalendarPage initState - userId: ${widget.userId}');
     _eventService = EventService();
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    _userId = (await ApiSessionStorage.getSession()).userId;
+    print('CalendarPage initState - userId: ${_userId}');
     _checkSession();
   }
 
@@ -38,7 +41,7 @@ class _CalendarPageState extends State<CalendarPage> {
     try {
       final session = await ApiSessionStorage.getSession();
       print('Current session: ${session.toJsonString()}');
-      print('Using userId: ${widget.userId}');
+      print('Using userId: ${_userId}');
       _loadEvents();
     } catch (e) {
       print('Error checking session: $e');
@@ -50,9 +53,9 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   Future<void> _loadEvents() async {
-    print('Loading events for user: ${widget.userId}');
+    print('Loading events for user: ${_userId}');
     try {
-      final response = await _eventService.getEventsForUser(widget.userId);
+      final response = await _eventService.getEventsForUser(_userId);
       print('Received response: ${response.events.length} events');
       setState(() {
         _events = response.events;
@@ -211,7 +214,7 @@ class _CalendarPageState extends State<CalendarPage> {
   Future<void> _registerForEvent(EventModel event) async {
     print('Registering for event: ${event.name}');
     try {
-      await _eventService.registerForEvent(widget.userId, event.id);
+      await _eventService.registerForEvent(_userId, event.id);
       setState(() {
         _events = _events.map((e) {
           if (e.id == event.id) {
@@ -242,7 +245,7 @@ class _CalendarPageState extends State<CalendarPage> {
   Future<void> _unregisterFromEvent(EventModel event) async {
     print('Unregistering from event: ${event.name}');
     try {
-      await _eventService.unregisterFromEvent(widget.userId, event.id);
+      await _eventService.unregisterFromEvent(_userId, event.id);
       setState(() {
         _events = _events.map((e) {
           if (e.id == event.id) {
@@ -272,13 +275,15 @@ class _CalendarPageState extends State<CalendarPage> {
 
   @override
   Widget build(BuildContext context) {
-    print('Building calendar page - isLoading: $_isLoading, events: ${_events.length}');
+    print(
+        'Building calendar page - isLoading: $_isLoading, events: ${_events.length}');
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
               child: Column(
                 children: [
                   Text(
@@ -341,9 +346,12 @@ class _CalendarPageState extends State<CalendarPage> {
                       ),
                       calendarBuilders: CalendarBuilders(
                         markerBuilder: (context, date, events) {
-                          final eventsForDate = _eventsByDate[DateTime.utc(date.year, date.month, date.day)] ?? [];
+                          final eventsForDate = _eventsByDate[DateTime.utc(
+                                  date.year, date.month, date.day)] ??
+                              [];
                           if (eventsForDate.isEmpty) return null;
-                          print('Adding marker for date: $date with ${eventsForDate.length} events');
+                          print(
+                              'Adding marker for date: $date with ${eventsForDate.length} events');
                           return Positioned(
                             bottom: 4,
                             child: Container(
@@ -362,9 +370,15 @@ class _CalendarPageState extends State<CalendarPage> {
                   const SizedBox(height: 16),
                   Expanded(
                     child: ListView.builder(
-                      itemCount: _eventsByDate[DateTime.utc(_selectedDay.year, _selectedDay.month, _selectedDay.day)]?.length ?? 0,
+                      itemCount: _eventsByDate[DateTime.utc(_selectedDay.year,
+                                  _selectedDay.month, _selectedDay.day)]
+                              ?.length ??
+                          0,
                       itemBuilder: (context, index) {
-                        final event = _eventsByDate[DateTime.utc(_selectedDay.year, _selectedDay.month, _selectedDay.day)]![index];
+                        final event = _eventsByDate[DateTime.utc(
+                            _selectedDay.year,
+                            _selectedDay.month,
+                            _selectedDay.day)]![index];
                         print('Building event card for: ${event.name}');
                         return Card(
                           margin: const EdgeInsets.symmetric(
@@ -407,4 +421,4 @@ class _CalendarPageState extends State<CalendarPage> {
             ),
     );
   }
-} 
+}
