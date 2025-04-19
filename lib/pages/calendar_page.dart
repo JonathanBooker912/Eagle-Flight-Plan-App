@@ -107,15 +107,18 @@ class _CalendarPageState extends State<CalendarPage> {
 
   void _showEventDetails(Event event) {
     print('Showing details for event: ${event.name}');
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         height: MediaQuery.of(context).size.height * 0.7,
-        decoration: const BoxDecoration(
-          color: AppTheme.surfaceColor,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
         ),
         child: Column(
           children: [
@@ -126,14 +129,10 @@ class _CalendarPageState extends State<CalendarPage> {
                 children: [
                   Text(
                     event.name,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: textTheme.titleLarge,
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white),
+                    icon: Icon(Icons.close, color: colorScheme.onSurface),
                     onPressed: () {
                       Navigator.of(context).pop();
                     },
@@ -141,7 +140,7 @@ class _CalendarPageState extends State<CalendarPage> {
                 ],
               ),
             ),
-            const Divider(color: Colors.grey),
+            Divider(color: colorScheme.outline),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
@@ -156,16 +155,14 @@ class _CalendarPageState extends State<CalendarPage> {
                     const SizedBox(height: 16),
                     Text(
                       'Description',
-                      style: TextStyle(
-                        color: AppTheme.primaryColor,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                      style: textTheme.titleMedium?.copyWith(
+                        color: colorScheme.primary,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       event.description,
-                      style: const TextStyle(color: Colors.white),
+                      style: textTheme.bodyLarge,
                     ),
                     const SizedBox(height: 24),
                     ElevatedButton(
@@ -183,15 +180,18 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   Widget _buildDetailRow(IconData icon, String text) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Icon(icon, color: AppTheme.primaryColor),
+          Icon(icon, color: colorScheme.primary),
           const SizedBox(width: 16),
           Text(
             text,
-            style: const TextStyle(color: Colors.white),
+            style: textTheme.bodyLarge,
           ),
         ],
       ),
@@ -262,10 +262,11 @@ class _CalendarPageState extends State<CalendarPage> {
 
   @override
   Widget build(BuildContext context) {
-    print(
-        'Building calendar page - isLoading: $_isLoading, events: ${_events.length}');
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: colorScheme.background,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
@@ -275,83 +276,69 @@ class _CalendarPageState extends State<CalendarPage> {
                 children: [
                   Text(
                     'Calendar',
-                    style: TextStyle(
-                      color: AppTheme.textPrimary,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: textTheme.titleLarge,
                   ),
                   const SizedBox(height: 16),
                   Card(
-                    color: AppTheme.backgroundDarken,
+                    color: colorScheme.surface,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(25),
                     ),
-                    child: TableCalendar(
+                    child: TableCalendar<EventModel>(
                       firstDay: DateTime.utc(2020, 1, 1),
                       lastDay: DateTime.utc(2030, 12, 31),
                       focusedDay: _focusedDay,
-                      selectedDayPredicate: (day) {
-                        return isSameDay(_selectedDay, day);
-                      },
+                      selectedDayPredicate: (day) =>
+                          isSameDay(_selectedDay, day),
                       calendarFormat: _calendarFormat,
-                      onFormatChanged: (format) {
-                        print('Calendar format changed to: $format');
-                        setState(() {
-                          _calendarFormat = format;
-                        });
-                      },
+                      eventLoader: (day) => _eventsByDate[day] ?? [],
+                      startingDayOfWeek: StartingDayOfWeek.monday,
+                      calendarStyle: CalendarStyle(
+                        outsideDaysVisible: false,
+                        weekendTextStyle: textTheme.bodyLarge!.copyWith(
+                          color: colorScheme.onSurface,
+                        ),
+                        defaultTextStyle: textTheme.bodyLarge!.copyWith(
+                          color: colorScheme.onSurface,
+                        ),
+                        selectedDecoration: BoxDecoration(
+                          color: colorScheme.primary,
+                          shape: BoxShape.circle,
+                        ),
+                        todayDecoration: BoxDecoration(
+                          color: colorScheme.secondary,
+                          shape: BoxShape.circle,
+                        ),
+                        markerDecoration: BoxDecoration(
+                          color: colorScheme.primary,
+                          shape: BoxShape.circle,
+                        ),
+                        cellMargin: const EdgeInsets.all(4),
+                      ),
+                      headerStyle: HeaderStyle(
+                        formatButtonVisible: false,
+                        titleCentered: true,
+                        titleTextStyle: textTheme.titleLarge!,
+                        leftChevronIcon: Icon(
+                          Icons.chevron_left,
+                          color: colorScheme.onSurface,
+                        ),
+                        rightChevronIcon: Icon(
+                          Icons.chevron_right,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
                       onDaySelected: (selectedDay, focusedDay) {
-                        print('Day selected: $selectedDay');
                         setState(() {
                           _selectedDay = selectedDay;
                           _focusedDay = focusedDay;
                         });
                       },
-                      calendarStyle: const CalendarStyle(
-                        outsideDaysVisible: false,
-                        weekendTextStyle: TextStyle(color: Colors.white),
-                        defaultTextStyle: TextStyle(color: Colors.white),
-                        selectedDecoration: BoxDecoration(
-                          color: AppTheme.primaryColor,
-                          shape: BoxShape.circle,
-                        ),
-                        todayDecoration: BoxDecoration(
-                          color: AppTheme.accentColor,
-                          shape: BoxShape.circle,
-                        ),
-                        cellPadding: EdgeInsets.only(bottom: 8),
-                      ),
-                      headerStyle: const HeaderStyle(
-                        formatButtonVisible: false,
-                        titleCentered: true,
-                        titleTextStyle: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      calendarBuilders: CalendarBuilders(
-                        markerBuilder: (context, date, events) {
-                          final eventsForDate = _eventsByDate[DateTime.utc(
-                                  date.year, date.month, date.day)] ??
-                              [];
-                          if (eventsForDate.isEmpty) return null;
-                          print(
-                              'Adding marker for date: $date with ${eventsForDate.length} events');
-                          return Positioned(
-                            bottom: 4,
-                            child: Container(
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: AppTheme.primaryColor,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
+                      onFormatChanged: (format) {
+                        setState(() {
+                          _calendarFormat = format;
+                        });
+                      },
                     ),
                   ),
                   const SizedBox(height: 16),

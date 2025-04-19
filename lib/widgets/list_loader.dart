@@ -50,6 +50,8 @@ class _ShimmeringCardState extends State<_ShimmeringCard>
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, child) {
@@ -59,7 +61,7 @@ class _ShimmeringCardState extends State<_ShimmeringCard>
             borderRadius: BorderRadius.circular(15),
           ),
           margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-          color: AppTheme.surfaceColor,
+          color: colorScheme.surface,
           child: IntrinsicHeight(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -69,7 +71,7 @@ class _ShimmeringCardState extends State<_ShimmeringCard>
                   child: Container(
                     width: 12,
                     decoration: BoxDecoration(
-                      color: AppTheme.backgroundColor.withOpacity(
+                      color: colorScheme.background.withOpacity(
                         _animation.value,
                       ),
                       borderRadius: const BorderRadius.only(
@@ -94,7 +96,7 @@ class _ShimmeringCardState extends State<_ShimmeringCard>
                                 width: 200,
                                 height: 36,
                                 decoration: BoxDecoration(
-                                  color: AppTheme.backgroundColor.withOpacity(
+                                  color: colorScheme.background.withOpacity(
                                     _animation.value,
                                   ),
                                   borderRadius: BorderRadius.circular(8),
@@ -105,7 +107,7 @@ class _ShimmeringCardState extends State<_ShimmeringCard>
                                 width: 150,
                                 height: 16,
                                 decoration: BoxDecoration(
-                                  color: AppTheme.backgroundColor.withOpacity(
+                                  color: colorScheme.background.withOpacity(
                                     _animation.value,
                                   ),
                                   borderRadius: BorderRadius.circular(8),
@@ -119,7 +121,7 @@ class _ShimmeringCardState extends State<_ShimmeringCard>
                           width: 60,
                           height: 24,
                           decoration: BoxDecoration(
-                            color: AppTheme.backgroundColor.withOpacity(
+                            color: colorScheme.background.withOpacity(
                               _animation.value,
                             ),
                             borderRadius: BorderRadius.circular(8),
