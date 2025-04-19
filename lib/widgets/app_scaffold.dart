@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
-import '../pages/home_page.dart';
 import '../pages/notification_page.dart';
 import '../services/api_token_service.dart';
-import '../services/service_locator.dart';
+import '../pages/flight_plan_page.dart';
+import '../pages/profile_page.dart';
 
 class AppScaffold extends StatelessWidget {
   final Widget body;
@@ -24,7 +24,7 @@ class AppScaffold extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       bottomNavigationBar: NavigationBar(currentRoute: currentRoute),
-      body: Padding(padding: EdgeInsets.all(24), child: body),
+      body: body,
     );
   }
 }
@@ -56,7 +56,7 @@ class NavigationBar extends StatelessWidget {
     Widget page;
     switch (route) {
       case '/home':
-        page = HomePage();
+        page = FlightPlanPage();
         break;
       case '/events':
         page = Center(child: Text('Events Page'));
@@ -87,21 +87,20 @@ class NavigationBar extends StatelessWidget {
         }
         break;
       case '/profile':
-        page = Center(child: Text('Profile Page'));
+        page = ProfilePage();
         break;
       default:
-        page = HomePage();
+        page = FlightPlanPage();
     }
 
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-        pageBuilder:
-            (context, animation, secondaryAnimation) => AppScaffold(
-              title: route.substring(1).toUpperCase(),
-              body: page,
-              currentRoute: route,
-            ),
+        pageBuilder: (context, animation, secondaryAnimation) => AppScaffold(
+          title: route.substring(1).toUpperCase(),
+          body: page,
+          currentRoute: route,
+        ),
         transitionDuration: Duration.zero,
         reverseTransitionDuration: Duration.zero,
       ),
@@ -111,12 +110,12 @@ class NavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       child: Card(
         elevation: 0,
         color: AppTheme.secondaryColor,
         child: Padding(
-          padding: EdgeInsets.all(6),
+          padding: const EdgeInsets.all(6),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
