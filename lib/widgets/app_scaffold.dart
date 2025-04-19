@@ -4,6 +4,7 @@ import '../pages/notification_page.dart';
 import '../services/api_token_service.dart';
 import '../pages/flight_plan_page.dart';
 import '../pages/profile_page.dart';
+import '../pages/calendar_page.dart';
 
 class AppScaffold extends StatelessWidget {
   final Widget body;
@@ -58,8 +59,27 @@ class NavigationBar extends StatelessWidget {
       case '/home':
         page = FlightPlanPage();
         break;
-      case '/events':
-        page = Center(child: Text('Events Page'));
+      case '/calendar':
+        try {
+          final authData = await _getAuthData();
+          page = CalendarPage(
+            userId: authData['userId'],
+          );
+        } catch (e) {
+          print('Error navigating to calendar: $e');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Please log in to view calendar'),
+              action: SnackBarAction(
+                label: 'Login',
+                onPressed: () {
+                  // TODO: Navigate to login page
+                },
+              ),
+            ),
+          );
+          return;
+        }
         break;
       case '/qr':
         page = Center(child: Text('QR Code Page'));
@@ -128,11 +148,11 @@ class NavigationBar extends StatelessWidget {
                 ),
               ),
               IconButton(
-                onPressed: () => _navigateTo(context, '/events'),
+                onPressed: () => _navigateTo(context, '/calendar'),
                 icon: Icon(
-                  Icons.event,
+                  Icons.calendar_today,
                   size: 32,
-                  color: _getIconColor('/events'),
+                  color: _getIconColor('/calendar'),
                 ),
               ),
               IconButton(
