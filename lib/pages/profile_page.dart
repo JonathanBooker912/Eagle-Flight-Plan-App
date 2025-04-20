@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../theme/app_theme.dart';
 import '../models/strength.dart';
 import '../models/link.dart';
@@ -17,7 +16,6 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  final user = FirebaseAuth.instance.currentUser;
   int _currentPage = 1;
   final int _pageSize = 6;
   int _totalPages = 1;
@@ -105,27 +103,25 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: [
                   // Profile and About Me Section
                   Card(
-                    color: AppTheme.primaryColor.withOpacity(0.1),
+                    color: const Color(0xFF32343A),
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: isMobile
                         ? Column(
                             children: [
                               _buildProfilePicture(),
-                              const SizedBox(height: 24),
+                              const SizedBox(height: 16),
                               _buildAboutMeSection(),
                             ],
                           )
                         : Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Expanded(
-                                flex: 2,
+                              SizedBox(
                                 child: _buildProfilePicture(),
                               ),
-                              const SizedBox(width: 24),
+                              const SizedBox(width: 16),
                               Expanded(
-                                flex: 4,
                                 child: _buildAboutMeSection(),
                               ),
                             ],
@@ -133,25 +129,25 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 8),
 
                   // Links Section
                   Card(
-                    color: AppTheme.primaryColor.withOpacity(0.1),
+                    color: const Color(0xFF32343A),
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: _buildLinksSection(),
                     ),
                   ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 8),
 
                   // Bottom Section
                   isMobile
                     ? Column(
                         children: [
                           _buildBadgesSection(),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 8),
                           _buildStrengthsSection(),
                         ],
                       )
@@ -161,15 +157,12 @@ class _ProfilePageState extends State<ProfilePage> {
                           Expanded(
                             child: _buildBadgesSection(),
                           ),
-                          const SizedBox(width: 16),
+                          const SizedBox(width: 8),
                           Expanded(
                             child: _buildStrengthsSection(),
                           ),
                         ],
                       ),
-                  
-                  // Logout Button
-                  _buildLogoutButton(),
                 ],
               ),
             ),
@@ -189,7 +182,7 @@ class _ProfilePageState extends State<ProfilePage> {
               radius: 60,
               backgroundColor: AppTheme.primaryColor,
               child: Text(
-                user?.email?.substring(0, 1).toUpperCase() ?? 'U',
+                _userProfile?.fullName.substring(0, 1).toUpperCase() ?? 'U',
                 style: const TextStyle(
                   fontSize: 30,
                   color: Colors.white,
@@ -216,17 +209,18 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         const SizedBox(height: 16),
         Text(
-          user?.displayName ?? 'User Name',
+          _userProfile?.fullName ?? 'User Name',
           style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
         Text(
-          user?.email ?? 'No email',
+          _userProfile?.email ?? 'No email',
           style: const TextStyle(
             fontSize: 16,
-            color: Colors.grey,
+            color: Colors.white,
           ),
         ),
       ],
@@ -242,6 +236,7 @@ class _ProfilePageState extends State<ProfilePage> {
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
         const SizedBox(height: 8),
@@ -253,9 +248,9 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           child: Text(
             _userProfile?.profileDescription ?? 'No description',
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 16,
-              color: Colors.grey[600],
+              color: Colors.white,
             ),
           ),
         ),
@@ -265,13 +260,14 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildLinksSection() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         const Text(
           'Links',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
         const SizedBox(height: 8),
@@ -283,31 +279,33 @@ class _ProfilePageState extends State<ProfilePage> {
               'No links found',
               style: TextStyle(
                 fontStyle: FontStyle.italic,
-                color: Colors.grey,
+                color: Colors.white,
               ),
             ),
           )
         else
           Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                'Email: ${user?.email ?? 'No email'}',
+                'Email: ${_userProfile?.email ?? 'No email'}',
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
+                  color: Colors.white,
                 ),
               ),
               const SizedBox(height: 8),
               ..._links.map((link) => Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       link.websiteName,
                       style: const TextStyle(
                         fontWeight: FontWeight.w500,
+                        color: Colors.white,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -332,7 +330,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildBadgesSection() {
     return Card(
-      color: AppTheme.primaryColor.withOpacity(0.1),
+      color: const Color(0xFF32343A),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -343,6 +341,7 @@ class _ProfilePageState extends State<ProfilePage> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
             ),
             const SizedBox(height: 16),
@@ -355,7 +354,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontStyle: FontStyle.italic,
-                    color: Colors.grey,
+                    color: Colors.white,
                   ),
                 ),
               )
@@ -375,6 +374,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     itemBuilder: (context, index) {
                       final badge = _badges[index];
                       return Card(
+                        color: const Color(0xFF32343A),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -385,13 +385,14 @@ class _ProfilePageState extends State<ProfilePage> {
                                 width: 60,
                               )
                             else
-                              const Icon(Icons.workspace_premium, size: 60),
+                              const Icon(Icons.workspace_premium, size: 60, color: Colors.white),
                             const SizedBox(height: 8),
                             Text(
                               badge.name,
                               textAlign: TextAlign.center,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
+                                color: Colors.white,
                               ),
                             ),
                           ],
@@ -420,7 +421,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildStrengthsSection() {
     return Card(
-      color: AppTheme.primaryColor.withOpacity(0.1),
+      color: const Color(0xFF32343A),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -431,6 +432,7 @@ class _ProfilePageState extends State<ProfilePage> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
             ),
             const SizedBox(height: 16),
@@ -443,7 +445,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontStyle: FontStyle.italic,
-                    color: Colors.grey,
+                    color: Colors.white,
                   ),
                 ),
               )
@@ -455,6 +457,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 itemBuilder: (context, index) {
                   final strength = _strengths[index];
                   return Card(
+                    color: const Color(0xFF32343A),
                     margin: const EdgeInsets.only(bottom: 8),
                     child: ListTile(
                       leading: CircleAvatar(
@@ -468,17 +471,21 @@ class _ProfilePageState extends State<ProfilePage> {
                         strength.name,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                       ),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(strength.description),
+                          Text(
+                            strength.description,
+                            style: const TextStyle(color: Colors.white),
+                          ),
                           const SizedBox(height: 4),
                           Text(
                             'Domain: ${strength.domain}',
-                            style: TextStyle(
-                              color: Colors.grey[600],
+                            style: const TextStyle(
+                              color: Colors.white70,
                               fontSize: 12,
                             ),
                           ),
@@ -489,48 +496,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 },
               ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLogoutButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 24),
-      child: Center(
-        child: ElevatedButton(
-          onPressed: () async {
-            try {
-              await FirebaseAuth.instance.signOut();
-              if (mounted) {
-                Navigator.of(context).pushReplacementNamed('/login');
-              }
-            } catch (e) {
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Error signing out: $e'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
-            }
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppTheme.primaryColor,
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          child: const Text(
-            'Sign Out',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
         ),
       ),
     );
