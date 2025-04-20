@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import '../theme/app_theme.dart';
 import '../pages/notification_page.dart';
 import '../services/api_token_service.dart';
 import '../pages/flight_plan_page.dart';
 import '../pages/profile_page.dart';
+import '../pages/calendar_page.dart';
 
 class AppScaffold extends StatelessWidget {
   final Widget body;
@@ -58,8 +60,8 @@ class NavigationBar extends StatelessWidget {
       case '/home':
         page = FlightPlanPage();
         break;
-      case '/events':
-        page = Center(child: Text('Events Page'));
+      case '/calendar':
+        page = CalendarPage();
         break;
       case '/qr':
         page = Center(child: Text('QR Code Page'));
@@ -122,17 +124,17 @@ class NavigationBar extends StatelessWidget {
               IconButton(
                 onPressed: () => _navigateTo(context, '/home'),
                 icon: Icon(
-                  Icons.flight,
+                  MdiIcons.bird,
                   size: 32,
                   color: _getIconColor('/home'),
                 ),
               ),
               IconButton(
-                onPressed: () => _navigateTo(context, '/events'),
+                onPressed: () => _navigateTo(context, '/calendar'),
                 icon: Icon(
                   Icons.event,
                   size: 32,
-                  color: _getIconColor('/events'),
+                  color: _getIconColor('/calendar'),
                 ),
               ),
               IconButton(
