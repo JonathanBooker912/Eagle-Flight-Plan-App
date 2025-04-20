@@ -43,7 +43,7 @@ class BadgeService {
   Future<BadgeResponse> getBadgesForStudent(int studentId, {int page = 1, int pageSize = 6}) async {
     try {
       final response = await ServiceLocator().api.get(
-        '/flight-plan-t1/badge/student/$studentId?page=$page&pageSize=$pageSize',
+        '/badge/student/$studentId?page=$page&pageSize=$pageSize',
       );
       
       if (response == null) {
