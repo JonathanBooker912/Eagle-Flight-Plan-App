@@ -72,7 +72,7 @@ class NavigationBar extends StatelessWidget {
         page = Center(child: Text('Notifications Page'));
         break;
       case '/profile':
-        page = Center(child: Text('Profile Page'));
+        page = const ProfilePage();
         break;
       default:
         page = FlightPlanPage();
