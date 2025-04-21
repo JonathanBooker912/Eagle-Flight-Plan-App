@@ -47,7 +47,14 @@ class StrengthService {
       }
 
       // The backend returns an array of strengths directly
-      final List<dynamic> strengthsJson = (response as List<dynamic>?) ?? [];
+      final List<dynamic> strengthsJson;
+      if (response is Map<String, dynamic>) {
+        // If response is a Map, try to get the strengths array from the 'data' key
+        strengthsJson = (response['data'] as List<dynamic>?) ?? [];
+      } else {
+        // If response is already a List, use it directly
+        strengthsJson = (response as List<dynamic>?) ?? [];
+      }
       
       print('📊 Response Stats:');
       print('   - Number of strengths: ${strengthsJson.length}');
