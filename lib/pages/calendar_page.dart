@@ -17,17 +17,19 @@ class CalendarPage extends StatefulWidget {
 class _CalendarPageState extends State<CalendarPage> {
   late int _userId;
   late EventService _eventService;
-  List<EventModel> _events = [];
+  List<Event> _events = [];
   bool _isLoading = true;
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
   CalendarFormat _calendarFormat = CalendarFormat.month;
-  Map<DateTime, List<EventModel>> _eventsByDate = {};
+  Map<DateTime, List<Event>> _eventsByDate = {};
 
   @override
   void initState() {
     super.initState();
-    _eventService = EventService();
+    _eventService = EventService(
+        baseUrl:
+            'https://api.example.com'); // Replace with your actual API base URL
     _initializeData();
   }
 
@@ -72,12 +74,12 @@ class _CalendarPageState extends State<CalendarPage> {
     }
   }
 
-  Map<DateTime, List<EventModel>> _groupEventsByDate(List<EventModel> events) {
+  Map<DateTime, List<Event>> _groupEventsByDate(List<Event> events) {
     print('Grouping ${events.length} events by date');
-    final Map<DateTime, List<EventModel>> eventsByDate = {};
+    final Map<DateTime, List<Event>> eventsByDate = {};
     for (var event in events) {
       // Convert UTC to CST (GMT-6)
-      final cstDate = event.date.subtract(const Duration(hours: 5));
+      final cstDate = event.startTime.subtract(const Duration(hours: 5));
       final date = DateTime.utc(cstDate.year, cstDate.month, cstDate.day);
       if (!eventsByDate.containsKey(date)) {
         eventsByDate[date] = [];
@@ -103,7 +105,7 @@ class _CalendarPageState extends State<CalendarPage> {
     );
   }
 
-  void _showEventDetails(EventModel event) {
+  void _showEventDetails(Event event) {
     print('Showing details for event: ${event.name}');
     showModalBottomSheet(
       context: context,
@@ -166,19 +168,10 @@ class _CalendarPageState extends State<CalendarPage> {
                       style: const TextStyle(color: Colors.white),
                     ),
                     const SizedBox(height: 24),
-                    if (!event.isRegistered)
-                      ElevatedButton(
-                        onPressed: () => _registerForEvent(event),
-                        child: const Text('Register for Event'),
-                      )
-                    else if (!event.isAttended)
-                      ElevatedButton(
-                        onPressed: () => _unregisterFromEvent(event),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.errorColor,
-                        ),
-                        child: const Text('Unregister from Event'),
-                      ),
+                    ElevatedButton(
+                      onPressed: () => _registerForEvent(event),
+                      child: const Text('Register for Event'),
+                    ),
                   ],
                 ),
               ),
@@ -211,23 +204,20 @@ class _CalendarPageState extends State<CalendarPage> {
     return '${cstTime.hour.toString().padLeft(2, '0')}:${cstTime.minute.toString().padLeft(2, '0')}';
   }
 
-  Future<void> _registerForEvent(EventModel event) async {
+  Future<void> _registerForEvent(Event event) async {
     print('Registering for event: ${event.name}');
     try {
       await _eventService.registerForEvent(_userId, event.id);
       setState(() {
         _events = _events.map((e) {
           if (e.id == event.id) {
-            return EventModel(
+            return Event(
               id: e.id,
               name: e.name,
               description: e.description,
-              date: e.date,
               startTime: e.startTime,
               endTime: e.endTime,
               location: e.location,
-              isRegistered: true,
-              isAttended: e.isAttended,
             );
           }
           return e;
@@ -242,23 +232,20 @@ class _CalendarPageState extends State<CalendarPage> {
     }
   }
 
-  Future<void> _unregisterFromEvent(EventModel event) async {
+  Future<void> _unregisterFromEvent(Event event) async {
     print('Unregistering from event: ${event.name}');
     try {
       await _eventService.unregisterFromEvent(_userId, event.id);
       setState(() {
         _events = _events.map((e) {
           if (e.id == event.id) {
-            return EventModel(
+            return Event(
               id: e.id,
               name: e.name,
               description: e.description,
-              date: e.date,
               startTime: e.startTime,
               endTime: e.endTime,
               location: e.location,
-              isRegistered: false,
-              isAttended: e.isAttended,
             );
           }
           return e;
@@ -402,13 +389,9 @@ class _CalendarPageState extends State<CalendarPage> {
                               '${_formatTime(event.startTime)} - ${_formatTime(event.endTime)}',
                               style: const TextStyle(color: Colors.grey),
                             ),
-                            trailing: Icon(
-                              event.isRegistered
-                                  ? Icons.check_circle
-                                  : Icons.circle_outlined,
-                              color: event.isRegistered
-                                  ? AppTheme.primaryColor
-                                  : Colors.grey,
+                            trailing: const Icon(
+                              Icons.circle_outlined,
+                              color: Colors.grey,
                             ),
                             onTap: () => _showEventDetails(event),
                           ),
