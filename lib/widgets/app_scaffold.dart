@@ -2,11 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import '../theme/app_theme.dart';
 import '../pages/flight_plan_page.dart';
-<<<<<<< HEAD
 import '../pages/profile_page.dart';
 import '../pages/calendar_page.dart';
-=======
->>>>>>> a9b969c (Did some things)
 import '../pages/check_in_page.dart';
 
 class AppScaffold extends StatelessWidget {

@@ -1,10 +1,10 @@
-<<<<<<< HEAD
-import 'dart:convert';
+import 'api_service.dart';
 import '../models/event.dart';
-import 'service_locator.dart';
+import '../models/flight_plan_item.dart';
+import '../services/api_session_storage.dart';
 
 class EventResponse {
-  final List<EventModel> events;
+  final List<Event> events;
   final int totalPages;
 
   EventResponse({
@@ -13,18 +13,19 @@ class EventResponse {
   });
 }
 
-class EventService {
-  EventService();
+class EventService extends ApiService {
+  EventService({required super.baseUrl});
 
-  Future<EventResponse> getEventsForUser(int userId, {int page = 1, int pageSize = 1000}) async {
+  Future<EventResponse> getEventsForUser(int userId,
+      {int page = 1, int pageSize = 1000}) async {
     try {
       print('Making API call to get events');
-      final response = await ServiceLocator().api.get(
+      final response = await get(
         '/event?page=$page&pageSize=$pageSize',
       );
-      
+
       print('Raw API response: $response');
-      
+
       if (response == null) {
         print('API response is null');
         return EventResponse(events: [], totalPages: 0);
@@ -33,11 +34,12 @@ class EventService {
       final List<dynamic> eventsJson = response['events'] ?? [];
       final total = eventsJson.length;
       final totalPages = 1; // Since we're getting all events at once
-      
-      print('Parsed events: ${eventsJson.length}, total: $total, totalPages: $totalPages');
-      
+
+      print(
+          'Parsed events: ${eventsJson.length}, total: $total, totalPages: $totalPages');
+
       return EventResponse(
-        events: eventsJson.map((json) => EventModel.fromJson(json)).toList(),
+        events: eventsJson.map((json) => Event.fromJson(json)).toList(),
         totalPages: totalPages,
       );
     } catch (e) {
@@ -49,9 +51,11 @@ class EventService {
   Future<void> registerForEvent(int userId, int eventId) async {
     try {
       print('Registering user $userId for event $eventId');
-      await ServiceLocator().api.post(
+      await post(
         '/event/$eventId/register',
-        {'studentIds': [userId]},
+        {
+          'studentIds': [userId]
+        },
       );
       print('Registration successful');
     } catch (e) {
@@ -63,7 +67,7 @@ class EventService {
   Future<void> unregisterFromEvent(int userId, int eventId) async {
     try {
       print('Unregistering user $userId from event $eventId');
-      await ServiceLocator().api.delete(
+      await delete(
         '/event/$eventId/unregister?studentIds=$userId',
       );
       print('Unregistration successful');
@@ -72,15 +76,6 @@ class EventService {
       rethrow;
     }
   }
-} 
-=======
-import 'api_service.dart';
-import '../models/event.dart';
-import '../models/flight_plan_item.dart';
-import '../services/api_session_storage.dart';
-
-class EventService extends ApiService {
-  EventService({required super.baseUrl});
 
   Future<Event> lookupEvent(String checkInCode) async {
     final studentId = (await ApiSessionStorage.getSession()).studentId;
@@ -115,4 +110,3 @@ class EventService extends ApiService {
     }
   }
 }
->>>>>>> a9b969c (Did some things)
