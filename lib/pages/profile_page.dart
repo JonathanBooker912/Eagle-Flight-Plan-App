@@ -24,6 +24,7 @@ class _ProfilePageState extends State<ProfilePage> {
   List<BadgeModel> _badges = [];
   bool _isLoading = true;
   UserProfile? _userProfile;
+  int? _expandedStrengthIndex; // Track which strength is expanded
   final StrengthService _strengthService = StrengthService();
   final LinkService _linkService = LinkService();
   final UserService _userService = UserService();
@@ -70,6 +71,29 @@ class _ProfilePageState extends State<ProfilePage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error loading data: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _loadBadges() async {
+    try {
+      const userId = 1; // TODO: Replace with actual user ID
+      final badgeResponse = await _badgeService.getBadgesForStudent(
+        userId,
+        page: _currentPage,
+        pageSize: _pageSize,
+      );
+      
+      setState(() {
+        _badges = badgeResponse.badges;
+        _totalPages = (badgeResponse.total / _pageSize).ceil();
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error loading badges: $e'),
           backgroundColor: Colors.red,
         ),
       );
@@ -189,22 +213,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
             ),
-            Positioned(
-              right: 0,
-              bottom: 0,
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryColor,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.edit,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-            ),
           ],
         ),
         const SizedBox(height: 16),
@@ -229,7 +237,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildAboutMeSection() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         const Text(
           'About Me:',
@@ -241,16 +249,20 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         const SizedBox(height: 8),
         Container(
-          padding: const EdgeInsets.all(12),
+         // padding: const EdgeInsets.all(12),
+         width: double.infinity,
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Text(
-            _userProfile?.profileDescription ?? 'No description',
-            style: const TextStyle(
-              fontSize: 16,
-              color: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: Text(
+              _userProfile?.profileDescription ?? 'No description',
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.white,
+              ),
             ),
           ),
         ),
@@ -260,7 +272,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildLinksSection() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
           'Links',
@@ -285,12 +297,12 @@ class _ProfilePageState extends State<ProfilePage> {
           )
         else
           Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'Email: ${_userProfile?.email ?? 'No email'}',
                 style: const TextStyle(
-                  fontSize: 16,
+                  fontSize: 14,
                   fontWeight: FontWeight.w500,
                   color: Colors.white,
                 ),
@@ -299,11 +311,12 @@ class _ProfilePageState extends State<ProfilePage> {
               ..._links.map((link) => Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Text(
                       link.websiteName,
                       style: const TextStyle(
+                        fontSize: 14,
                         fontWeight: FontWeight.w500,
                         color: Colors.white,
                       ),
@@ -330,7 +343,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildBadgesSection() {
     return Card(
-      color: const Color(0xFF32343A),
+      color: AppTheme.surfaceColor,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -344,7 +357,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 color: Colors.white,
               ),
             ),
-            const SizedBox(height: 16),
             if (_isLoading)
               const Center(child: CircularProgressIndicator())
             else if (_badges.isEmpty)
@@ -364,7 +376,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 3,
                       childAspectRatio: 1,
                       crossAxisSpacing: 8,
@@ -374,7 +386,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     itemBuilder: (context, index) {
                       final badge = _badges[index];
                       return Card(
-                        color: const Color(0xFF32343A),
+                        color: const Color(0xFF42444C),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -391,6 +403,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               badge.name,
                               textAlign: TextAlign.center,
                               style: const TextStyle(
+                                fontSize: 14,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
                               ),
@@ -401,15 +414,39 @@ class _ProfilePageState extends State<ProfilePage> {
                     },
                   ),
                   if (_totalPages > 1)
-                    PaginationButtons(
-                      currentPage: _currentPage,
-                      totalPages: _totalPages,
-                      onPageChanged: (page) {
-                        setState(() {
-                          _currentPage = page;
-                        });
-                        _loadData();
-                      },
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.chevron_left, color: Colors.white),
+                            onPressed: _currentPage > 1
+                                ? () {
+                                    setState(() {
+                                      _currentPage--;
+                                    });
+                                    _loadBadges();
+                                  }
+                                : null,
+                          ),
+                          Text(
+                            'Page $_currentPage of $_totalPages',
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.chevron_right, color: Colors.white),
+                            onPressed: _currentPage < _totalPages
+                                ? () {
+                                    setState(() {
+                                      _currentPage++;
+                                    });
+                                    _loadBadges();
+                                  }
+                                : null,
+                          ),
+                        ],
+                      ),
                     ),
                 ],
               ),
@@ -421,7 +458,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildStrengthsSection() {
     return Card(
-      color: const Color(0xFF32343A),
+      color: AppTheme.surfaceColor,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -435,7 +472,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 color: Colors.white,
               ),
             ),
-            const SizedBox(height: 16),
             if (_isLoading)
               const Center(child: CircularProgressIndicator())
             else if (_strengths.isEmpty)
@@ -456,43 +492,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 itemCount: _strengths.length,
                 itemBuilder: (context, index) {
                   final strength = _strengths[index];
-                  return Card(
-                    color: const Color(0xFF32343A),
-                    margin: const EdgeInsets.only(bottom: 8),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: AppTheme.primaryColor,
-                        child: Text(
-                          '${strength.number ?? index + 1}',
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                      ),
-                      title: Text(
-                        strength.name,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            strength.description,
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Domain: ${strength.domain}',
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
+                  return _buildStrengthCard(strength, index);
                 },
               ),
           ],
@@ -500,39 +500,118 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
-}
 
-class PaginationButtons extends StatelessWidget {
-  final int currentPage;
-  final int totalPages;
-  final Function(int) onPageChanged;
+  Widget _buildStrengthCard(StrengthModel strength, int index) {
+    return StatefulBuilder(
+      builder: (context, setState) {
+        final isExpanded = _expandedStrengthIndex == index;
+        
+        Color getDomainColor(String domain) {
+          switch (domain) {
+            case 'Executing':
+              return const Color(0xFF8B5CF6); // Blue
+            case 'Influencing':
+              return const Color(0xFFD97706); // Orange
+            case 'Relationship Building':
+              return const Color(0xFF0070CA); // Green
+            case 'Strategic Planning':
+              return const Color(0xFF10B981); // Purple
+            default:
+              return const Color(0xFF0070CA); // Default blue
+          }
+        }
 
-  const PaginationButtons({
-    super.key,
-    required this.currentPage,
-    required this.totalPages,
-    required this.onPageChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        IconButton(
-          icon: const Icon(Icons.chevron_left),
-          onPressed: currentPage > 1
-              ? () => onPageChanged(currentPage - 1)
-              : null,
-        ),
-        Text('Page $currentPage of $totalPages'),
-        IconButton(
-          icon: const Icon(Icons.chevron_right),
-          onPressed: currentPage < totalPages
-              ? () => onPageChanged(currentPage + 1)
-              : null,
-        ),
-      ],
+        return GestureDetector(
+          onTap: () {
+            setState(() {
+              if (isExpanded) {
+                _expandedStrengthIndex = null;
+              } else {
+                _expandedStrengthIndex = index;
+              }
+            });
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            height: isExpanded ? 175 : 50,
+            child: Card(
+              color:const Color(0xFF42444C),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: getDomainColor(strength.domain),
+                            borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(8),
+                              topRight: Radius.zero,
+                              bottomRight: Radius.zero,
+                              bottomLeft: Radius.circular(8),
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${strength.number ?? index + 1}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Text(
+                            strength.name,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Padding(
+                          padding: const EdgeInsets.only(right: 16),
+                          child: Text(
+                            strength.domain,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (isExpanded)
+                      Flexible(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                          child: Text(
+                            strength.description,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
