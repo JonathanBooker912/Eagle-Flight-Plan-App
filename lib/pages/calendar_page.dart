@@ -284,7 +284,7 @@ class _CalendarPageState extends State<CalendarPage> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(25),
                     ),
-                    child: TableCalendar<EventModel>(
+                    child: TableCalendar<Event>(
                       firstDay: DateTime.utc(2020, 1, 1),
                       lastDay: DateTime.utc(2030, 12, 31),
                       focusedDay: _focusedDay,
@@ -359,11 +359,11 @@ class _CalendarPageState extends State<CalendarPage> {
                             horizontal: 16,
                             vertical: 8,
                           ),
-                          color: AppTheme.surfaceColor,
+                          color: colorScheme.surface,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(25),
-                            side: const BorderSide(
-                              color: AppTheme.primaryColor,
+                            side: BorderSide(
+                              color: colorScheme.primary,
                               width: 2,
                             ),
                           ),

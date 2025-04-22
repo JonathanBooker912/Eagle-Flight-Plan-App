@@ -28,8 +28,21 @@ class AppScaffold extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: colorScheme.background,
-      bottomNavigationBar: NavigationBar(currentRoute: currentRoute),
-      body: body,
+      bottomNavigationBar:
+          stackNavigationBar ? null : NavigationBar(currentRoute: currentRoute),
+      body: stackNavigationBar
+          ? Stack(
+              children: [
+                body,
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: NavigationBar(currentRoute: currentRoute),
+                ),
+              ],
+            )
+          : body,
     );
   }
 }
@@ -39,24 +52,11 @@ class NavigationBar extends StatelessWidget {
 
   const NavigationBar({super.key, required this.currentRoute});
 
-  Color _getIconColor(BuildContext context, String route) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return currentRoute == route ? colorScheme.primary : colorScheme.onSurface;
+  Color _getIconColor(String route, ColorScheme colorScheme) {
+    return currentRoute == route ? colorScheme.primary : colorScheme.background;
   }
 
-  Future<Map<String, dynamic>> _getAuthData() async {
-    final token = await TokenService.getToken();
-    if (token == null) {
-      throw Exception('No authentication token found');
-    }
-    // TODO: Get user ID from your user service or shared preferences
-    return {
-      'token': token,
-      'userId': 1, // Replace with actual user ID
-    };
-  }
-
-  void _navigateTo(BuildContext context, String route) async {
+  void _navigateTo(BuildContext context, String route) {
     Widget page;
     switch (route) {
       case '/home':
@@ -101,7 +101,7 @@ class NavigationBar extends StatelessWidget {
       padding: EdgeInsets.all(16),
       child: Card(
         elevation: 0,
-        color: colorScheme.surface,
+        color: AppTheme.secondaryColor,
         child: Padding(
           padding: EdgeInsets.all(6),
           child: Row(
@@ -112,7 +112,7 @@ class NavigationBar extends StatelessWidget {
                 icon: Icon(
                   MdiIcons.bird,
                   size: 32,
-                  color: _getIconColor(context, '/home'),
+                  color: _getIconColor('/home', colorScheme),
                 ),
               ),
               IconButton(
@@ -120,7 +120,7 @@ class NavigationBar extends StatelessWidget {
                 icon: Icon(
                   Icons.event,
                   size: 32,
-                  color: _getIconColor(context, '/calendar'),
+                  color: _getIconColor('/calendar', colorScheme),
                 ),
               ),
               IconButton(
@@ -128,7 +128,7 @@ class NavigationBar extends StatelessWidget {
                 icon: Icon(
                   Icons.qr_code_2,
                   size: 32,
-                  color: _getIconColor(context, '/qr'),
+                  color: _getIconColor('/qr', colorScheme),
                 ),
               ),
               IconButton(
@@ -136,7 +136,7 @@ class NavigationBar extends StatelessWidget {
                 icon: Icon(
                   Icons.notifications,
                   size: 32,
-                  color: _getIconColor(context, '/notifications'),
+                  color: _getIconColor('/notifications', colorScheme),
                 ),
               ),
               IconButton(
@@ -144,7 +144,7 @@ class NavigationBar extends StatelessWidget {
                 icon: Icon(
                   Icons.person,
                   size: 32,
-                  color: _getIconColor(context, '/profile'),
+                  color: _getIconColor('/profile', colorScheme),
                 ),
               ),
             ],

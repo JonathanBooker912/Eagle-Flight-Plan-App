@@ -12,6 +12,7 @@ class CheckInSuccessModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -51,7 +52,7 @@ class CheckInSuccessModal extends StatelessWidget {
                           borderRadius: BorderRadius.circular(15)),
                       margin: const EdgeInsets.symmetric(
                           horizontal: 6, vertical: 6),
-                      color: AppTheme.surfaceColor,
+                      color: colorScheme.surface,
                       child: IntrinsicHeight(
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.stretch,

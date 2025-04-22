@@ -45,7 +45,7 @@ class AppTheme {
           fontWeight: FontWeight.bold,
         ),
         bodyLarge: TextStyle(color: lightTextPrimary, fontSize: 16),
-        bodyMedium: TextStyle(color: lightTextSecondary, fontSize: 14),
+        bodyMedium: TextStyle(color: lightTextPrimary, fontSize: 14),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -92,7 +92,7 @@ class AppTheme {
           fontWeight: FontWeight.bold,
         ),
         bodyLarge: TextStyle(color: darkTextPrimary, fontSize: 16),
-        bodyMedium: TextStyle(color: darkTextSecondary, fontSize: 14),
+        bodyMedium: TextStyle(color: darkTextPrimary, fontSize: 14),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(

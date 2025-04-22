@@ -43,9 +43,11 @@ class _EventCheckInPageState extends State<EventCheckInPage> {
   }
 
   void _showSuccessModal(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: colorScheme.background,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -59,11 +61,13 @@ class _EventCheckInPageState extends State<EventCheckInPage> {
   }
 
   void _showEventDetails(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     if (_event == null) return;
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: colorScheme.background,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),

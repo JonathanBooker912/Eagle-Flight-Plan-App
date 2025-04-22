@@ -37,6 +37,7 @@ class _EventDetailsModalState extends State<EventDetailsModal> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -123,7 +124,7 @@ class _EventDetailsModalState extends State<EventDetailsModal> {
                               borderRadius: BorderRadius.circular(15)),
                           margin: const EdgeInsets.symmetric(
                               horizontal: 6, vertical: 6),
-                          color: AppTheme.surfaceColor,
+                          color: colorScheme.surface,
                           child: Container(
                             child: IntrinsicHeight(
                               child: Row(
@@ -137,11 +138,11 @@ class _EventDetailsModalState extends State<EventDetailsModal> {
                                       decoration: BoxDecoration(
                                         color: item.status.toLowerCase() ==
                                                 'complete'
-                                            ? AppTheme.primaryColor
+                                            ? colorScheme.primary
                                             : item.status.toLowerCase() ==
                                                     'incomplete'
-                                                ? AppTheme.errorColor
-                                                : AppTheme.accentColor,
+                                                ? colorScheme.error
+                                                : colorScheme.tertiary,
                                         borderRadius: const BorderRadius.only(
                                           topLeft: Radius.circular(9),
                                           bottomLeft: Radius.circular(9),
