@@ -1,9 +1,15 @@
+import 'package:eagle_flight_plan/services/service_locator.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../models/event.dart';
 import '../services/event_service.dart';
 import '../theme/app_theme.dart';
 import '../services/api_session_storage.dart';
+import '../widgets/event_card.dart';
+import '../widgets/event_list.dart';
+import '../widgets/calendar_header.dart';
+import '../widgets/calendar_loader.dart';
+import '../widgets/shimmer.dart';
 
 class CalendarPage extends StatefulWidget {
   const CalendarPage({
@@ -16,7 +22,7 @@ class CalendarPage extends StatefulWidget {
 
 class _CalendarPageState extends State<CalendarPage> {
   late int _userId;
-  late EventService _eventService;
+  late ServiceLocator _serviceLocator = ServiceLocator();
   List<Event> _events = [];
   bool _isLoading = true;
   DateTime _focusedDay = DateTime.now();
@@ -27,9 +33,6 @@ class _CalendarPageState extends State<CalendarPage> {
   @override
   void initState() {
     super.initState();
-    _eventService = EventService(
-        baseUrl:
-            'https://api.example.com'); // Replace with your actual API base URL
     _initializeData();
   }
 
@@ -57,8 +60,8 @@ class _CalendarPageState extends State<CalendarPage> {
   Future<void> _loadEvents() async {
     print('Loading events for user: ${_userId}');
     try {
-      final response = await _eventService.getEventsForUser(_userId);
-      print('Received response: ${response.events.length} events');
+      final response = await _serviceLocator.event.getEventsForUser(_userId);
+      print('Received response: ${response} events');
       setState(() {
         _events = response.events;
         _eventsByDate = _groupEventsByDate(_events);
@@ -88,6 +91,13 @@ class _CalendarPageState extends State<CalendarPage> {
       print('Event added: ${event.name} on ${date.toString()}');
     }
     return eventsByDate;
+  }
+
+  int _getEventCountForMonth(DateTime month) {
+    return _events.where((event) {
+      final eventDate = event.startTime;
+      return eventDate.year == month.year && eventDate.month == month.month;
+    }).length;
   }
 
   void _showError(String message) {
@@ -207,7 +217,7 @@ class _CalendarPageState extends State<CalendarPage> {
   Future<void> _registerForEvent(Event event) async {
     print('Registering for event: ${event.name}');
     try {
-      await _eventService.registerForEvent(_userId, event.id);
+      await _serviceLocator.event.registerForEvent(_userId, event.id);
       setState(() {
         _events = _events.map((e) {
           if (e.id == event.id) {
@@ -235,7 +245,7 @@ class _CalendarPageState extends State<CalendarPage> {
   Future<void> _unregisterFromEvent(Event event) async {
     print('Unregistering from event: ${event.name}');
     try {
-      await _eventService.unregisterFromEvent(_userId, event.id);
+      await _serviceLocator.event.unregisterFromEvent(_userId, event.id);
       setState(() {
         _events = _events.map((e) {
           if (e.id == event.id) {
@@ -268,21 +278,125 @@ class _CalendarPageState extends State<CalendarPage> {
     return Scaffold(
       backgroundColor: colorScheme.background,
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+              child: Column(
+                children: [
+                  const SizedBox(height: 16),
+                  const CalendarLoader(),
+                  const SizedBox(height: 16),
+                  Card(
+                    elevation: 0,
+                    color: colorScheme.surface,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    margin: const EdgeInsets.only(bottom: 8),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 80,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: colorScheme.background.withOpacity(0.5),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: 2,
+                      itemBuilder: (context, index) {
+                        return Card(
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          margin: const EdgeInsets.symmetric(vertical: 6),
+                          color: colorScheme.surface,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 12,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color:
+                                        colorScheme.background.withOpacity(0.5),
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(9),
+                                      bottomLeft: Radius.circular(9),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        width: 120,
+                                        height: 20,
+                                        decoration: BoxDecoration(
+                                          color: colorScheme.background
+                                              .withOpacity(0.5),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Container(
+                                        width: 80,
+                                        height: 16,
+                                        decoration: BoxDecoration(
+                                          color: colorScheme.background
+                                              .withOpacity(0.5),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Container(
+                                  width: 60,
+                                  height: 20,
+                                  decoration: BoxDecoration(
+                                    color:
+                                        colorScheme.background.withOpacity(0.5),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            )
           : Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
               child: Column(
                 children: [
-                  Text(
-                    'Calendar',
-                    style: textTheme.titleLarge,
-                  ),
                   const SizedBox(height: 16),
                   Card(
+                    elevation: 0,
                     color: colorScheme.surface,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25),
+                      borderRadius: BorderRadius.circular(15),
                     ),
                     child: TableCalendar<Event>(
                       firstDay: DateTime.utc(2020, 1, 1),
@@ -306,18 +420,22 @@ class _CalendarPageState extends State<CalendarPage> {
                           shape: BoxShape.circle,
                         ),
                         todayDecoration: BoxDecoration(
-                          color: colorScheme.secondary,
                           shape: BoxShape.circle,
+                          border: Border.all(
+                            color: colorScheme.secondary,
+                            width: 1,
+                          ),
                         ),
                         markerDecoration: BoxDecoration(
-                          color: colorScheme.primary,
+                          color: colorScheme.tertiary,
                           shape: BoxShape.circle,
                         ),
+                        markerSize: 6,
                         cellMargin: const EdgeInsets.all(4),
                       ),
                       headerStyle: HeaderStyle(
                         formatButtonVisible: false,
-                        titleCentered: true,
+                        titleCentered: false,
                         titleTextStyle: textTheme.titleLarge!,
                         leftChevronIcon: Icon(
                           Icons.chevron_left,
@@ -327,6 +445,40 @@ class _CalendarPageState extends State<CalendarPage> {
                           Icons.chevron_right,
                           color: colorScheme.onSurface,
                         ),
+                        titleTextFormatter: (date, locale) {
+                          final eventCount = _getEventCountForMonth(date);
+                          return '${date.year} ${_getMonthName(date.month)}';
+                        },
+                        leftChevronMargin: const EdgeInsets.only(left: 8),
+                        rightChevronMargin: const EdgeInsets.only(right: 8),
+                        leftChevronPadding: const EdgeInsets.all(8),
+                        rightChevronPadding: const EdgeInsets.all(8),
+                      ),
+                      calendarBuilders: CalendarBuilders(
+                        headerTitleBuilder: (context, date) {
+                          final eventCount = _getEventCountForMonth(date);
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                '${_getMonthName(date.month)} ${date.year}',
+                                style: textTheme.titleLarge,
+                              ),
+                              Chip(
+                                label: Text(
+                                  '${eventCount > 0 ? eventCount : 'No'} Events',
+                                  style: textTheme.bodySmall?.copyWith(
+                                    color: colorScheme.onPrimary,
+                                  ),
+                                ),
+                                backgroundColor: colorScheme.primary,
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                                side: BorderSide.none,
+                              ),
+                            ],
+                          );
+                        },
                       ),
                       onDaySelected: (selectedDay, focusedDay) {
                         setState(() {
@@ -339,56 +491,48 @@ class _CalendarPageState extends State<CalendarPage> {
                           _calendarFormat = format;
                         });
                       },
+                      availableGestures: AvailableGestures.horizontalSwipe,
                     ),
                   ),
                   const SizedBox(height: 16),
+                  CalendarHeader(
+                    date: _selectedDay,
+                    eventCount: _eventsByDate[DateTime.utc(_selectedDay.year,
+                                _selectedDay.month, _selectedDay.day)]
+                            ?.length ??
+                        0,
+                    getMonthName: _getMonthName,
+                  ),
                   Expanded(
-                    child: ListView.builder(
-                      itemCount: _eventsByDate[DateTime.utc(_selectedDay.year,
+                    child: EventList(
+                      events: _eventsByDate[DateTime.utc(_selectedDay.year,
                                   _selectedDay.month, _selectedDay.day)]
-                              ?.length ??
-                          0,
-                      itemBuilder: (context, index) {
-                        final event = _eventsByDate[DateTime.utc(
-                            _selectedDay.year,
-                            _selectedDay.month,
-                            _selectedDay.day)]![index];
-                        print('Building event card for: ${event.name}');
-                        return Card(
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          color: colorScheme.surface,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
-                            side: BorderSide(
-                              color: colorScheme.primary,
-                              width: 2,
-                            ),
-                          ),
-                          child: ListTile(
-                            title: Text(
-                              event.name,
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                            subtitle: Text(
-                              '${_formatTime(event.startTime)} - ${_formatTime(event.endTime)}',
-                              style: const TextStyle(color: Colors.grey),
-                            ),
-                            trailing: const Icon(
-                              Icons.circle_outlined,
-                              color: Colors.grey,
-                            ),
-                            onTap: () => _showEventDetails(event),
-                          ),
-                        );
-                      },
+                              ?.toList() ??
+                          [],
+                      onEventTap: _showEventDetails,
                     ),
                   ),
                 ],
               ),
             ),
     );
+  }
+
+  String _getMonthName(int month) {
+    const monthNames = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
+    ];
+    return monthNames[month - 1];
   }
 }
