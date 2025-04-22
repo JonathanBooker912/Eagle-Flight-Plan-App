@@ -16,6 +16,8 @@ class BarcodeScannerOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Stack(
       children: [
         // Header card
@@ -26,7 +28,7 @@ class BarcodeScannerOverlay extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.surfaceColor,
+              color: colorScheme.surface,
               borderRadius: BorderRadius.circular(16),
             ),
             child: const Column(
@@ -78,7 +80,7 @@ class BarcodeScannerOverlay extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.only(bottom: 100.0),
               child: Center(
-                child: _buildStatusMessage(),
+                child: _buildStatusMessage(colorScheme),
               ),
             ),
           ),
@@ -87,7 +89,7 @@ class BarcodeScannerOverlay extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusMessage() {
+  Widget _buildStatusMessage(ColorScheme colorScheme) {
     if (barcode == null) {
       return const Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -116,10 +118,10 @@ class BarcodeScannerOverlay extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const SizedBox(height: 16),
-          const Icon(
+          Icon(
             Icons.error_outline,
             size: 40,
-            color: AppTheme.errorColor,
+            color: colorScheme.error,
           ),
           const SizedBox(height: 16),
           Text(
