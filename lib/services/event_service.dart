@@ -38,8 +38,19 @@ class EventService extends ApiService {
       print(
           'Parsed events: ${eventsJson.length}, total: $total, totalPages: $totalPages');
 
+      // Get registered events for the user
+      final registeredEventsResponse = await get('/event/registered/$userId');
+      final List<dynamic> registeredEventsJson =
+          registeredEventsResponse['events'] ?? [];
+      final Set<int> registeredEventIds =
+          registeredEventsJson.map((e) => e['id'] as int).toSet();
+
       return EventResponse(
-        events: eventsJson.map((json) => Event.fromJson(json)).toList(),
+        events: eventsJson.map((json) {
+          final event = Event.fromJson(json);
+          event.isRegistered = registeredEventIds.contains(event.id);
+          return event;
+        }).toList(),
         totalPages: totalPages,
       );
     } catch (e) {

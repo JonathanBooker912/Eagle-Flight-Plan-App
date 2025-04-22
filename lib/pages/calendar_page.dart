@@ -10,6 +10,7 @@ import '../widgets/event_list.dart';
 import '../widgets/calendar_header.dart';
 import '../widgets/calendar_loader.dart';
 import '../widgets/shimmer.dart';
+import '../widgets/event_details_modal.dart';
 
 class CalendarPage extends StatefulWidget {
   const CalendarPage({
@@ -118,7 +119,6 @@ class _CalendarPageState extends State<CalendarPage> {
   void _showEventDetails(Event event) {
     print('Showing details for event: ${event.name}');
     final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
 
     showModalBottomSheet(
       context: context,
@@ -130,88 +130,21 @@ class _CalendarPageState extends State<CalendarPage> {
           color: colorScheme.surface,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
         ),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    event.name,
-                    style: textTheme.titleLarge,
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.close, color: colorScheme.onSurface),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              ),
-            ),
-            Divider(color: colorScheme.outline),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildDetailRow(Icons.location_on, event.location),
-                    _buildDetailRow(
-                      Icons.access_time,
-                      '${_formatTime(event.startTime)} - ${_formatTime(event.endTime)}',
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Description',
-                      style: textTheme.titleMedium?.copyWith(
-                        color: colorScheme.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      event.description,
-                      style: textTheme.bodyLarge,
-                    ),
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: () => _registerForEvent(event),
-                      child: const Text('Register for Event'),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+        child: EventDetailsModal(
+          event: event,
+          checkInError: null,
+          isCheckingIn: false,
+          onCheckIn: () {
+            Navigator.pop(context);
+          },
+          onRegister: () => _registerForEvent(event),
+          onUnregister: () => _unregisterFromEvent(event),
+          isRegistered:
+              _events.any((e) => e.id == event.id && e.isRegistered == true),
+          modalType: EventModalType.register,
         ),
       ),
     );
-  }
-
-  Widget _buildDetailRow(IconData icon, String text) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Icon(icon, color: colorScheme.primary),
-          const SizedBox(width: 16),
-          Text(
-            text,
-            style: textTheme.bodyLarge,
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatTime(DateTime time) {
-    // Convert UTC to CST (GMT-6)
-    final cstTime = time.subtract(const Duration(hours: 6));
-    return '${cstTime.hour.toString().padLeft(2, '0')}:${cstTime.minute.toString().padLeft(2, '0')}';
   }
 
   Future<void> _registerForEvent(Event event) async {
@@ -219,19 +152,25 @@ class _CalendarPageState extends State<CalendarPage> {
     try {
       await _serviceLocator.event.registerForEvent(_userId, event.id);
       setState(() {
-        _events = _events.map((e) {
-          if (e.id == event.id) {
-            return Event(
-              id: e.id,
-              name: e.name,
-              description: e.description,
-              startTime: e.startTime,
-              endTime: e.endTime,
-              location: e.location,
-            );
-          }
-          return e;
-        }).toList();
+        // Update the event's registration status
+        final updatedEvent = Event(
+          id: event.id,
+          name: event.name,
+          description: event.description,
+          startTime: event.startTime,
+          endTime: event.endTime,
+          location: event.location,
+          isRegistered: true,
+        );
+
+        // Replace the event in the list
+        final index = _events.indexWhere((e) => e.id == event.id);
+        if (index != -1) {
+          _events[index] = updatedEvent;
+        } else {
+          _events.add(updatedEvent);
+        }
+
         _eventsByDate = _groupEventsByDate(_events);
       });
       print('Successfully registered for event');
@@ -247,19 +186,23 @@ class _CalendarPageState extends State<CalendarPage> {
     try {
       await _serviceLocator.event.unregisterFromEvent(_userId, event.id);
       setState(() {
-        _events = _events.map((e) {
-          if (e.id == event.id) {
-            return Event(
-              id: e.id,
-              name: e.name,
-              description: e.description,
-              startTime: e.startTime,
-              endTime: e.endTime,
-              location: e.location,
-            );
-          }
-          return e;
-        }).toList();
+        // Update the event's registration status
+        final updatedEvent = Event(
+          id: event.id,
+          name: event.name,
+          description: event.description,
+          startTime: event.startTime,
+          endTime: event.endTime,
+          location: event.location,
+          isRegistered: false,
+        );
+
+        // Replace the event in the list
+        final index = _events.indexWhere((e) => e.id == event.id);
+        if (index != -1) {
+          _events[index] = updatedEvent;
+        }
+
         _eventsByDate = _groupEventsByDate(_events);
       });
       print('Successfully unregistered from event');

@@ -30,61 +30,65 @@ class EventCard extends StatelessWidget {
       ),
       margin: const EdgeInsets.symmetric(vertical: 6),
       color: colorScheme.surface,
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(8, 8, 0, 8),
-              child: Container(
-                width: 12,
-                decoration: BoxDecoration(
-                  color: colorScheme.primary,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(9),
-                    bottomLeft: Radius.circular(9),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(15),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 8, 0, 8),
+                child: Container(
+                  width: 12,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(9),
+                      bottomLeft: Radius.circular(9),
+                    ),
                   ),
                 ),
               ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                event.name,
-                                style: textTheme.titleMedium,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            event.location,
-                            style: textTheme.bodyMedium,
-                          ),
-                        ],
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  event.name,
+                                  style: textTheme.titleMedium,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              event.location,
+                              style: textTheme.bodyMedium,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Text(
-                      _formatTime(event.startTime),
-                      style: textTheme.bodyMedium,
-                    ),
-                  ],
+                      const SizedBox(width: 16),
+                      Text(
+                        _formatTime(event.startTime),
+                        style: textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

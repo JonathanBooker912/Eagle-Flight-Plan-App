@@ -2,11 +2,20 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../models/event.dart';
 
+enum EventModalType {
+  checkIn,
+  register,
+}
+
 class EventDetailsModal extends StatefulWidget {
   final Event event;
   final String? checkInError;
   final bool isCheckingIn;
   final Function() onCheckIn;
+  final Function()? onRegister;
+  final Function()? onUnregister;
+  final bool isRegistered;
+  final EventModalType modalType;
 
   const EventDetailsModal({
     super.key,
@@ -14,6 +23,10 @@ class EventDetailsModal extends StatefulWidget {
     required this.checkInError,
     required this.isCheckingIn,
     required this.onCheckIn,
+    this.onRegister,
+    this.onUnregister,
+    this.isRegistered = false,
+    this.modalType = EventModalType.checkIn,
   });
 
   @override
@@ -32,6 +45,81 @@ class _EventDetailsModalState extends State<EventDetailsModal> {
       return 'Unable to check in. Please try again later';
     } else {
       return 'An error occurred. Please try again';
+    }
+  }
+
+  Widget _buildActionButton() {
+    final colorScheme = Theme.of(context).colorScheme;
+    if (widget.modalType == EventModalType.checkIn) {
+      return ElevatedButton(
+        onPressed: widget.isCheckingIn
+            ? null
+            : () {
+                if (widget.checkInError != null &&
+                    widget.checkInError!.contains('already checked in')) {
+                  Navigator.pop(context);
+                  return;
+                }
+                widget.onCheckIn();
+              },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppTheme.primaryColor,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        child: widget.isCheckingIn
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              )
+            : Text(
+                widget.checkInError != null &&
+                        widget.checkInError!.contains('already checked in')
+                    ? 'Close'
+                    : widget.checkInError != null
+                        ? 'Try Again'
+                        : 'Check In',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+      );
+    } else {
+      return Row(
+        children: [
+          Expanded(
+            child: ElevatedButton(
+              onPressed:
+                  widget.isRegistered ? widget.onUnregister : widget.onRegister,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: widget.isRegistered
+                    ? colorScheme.error
+                    : colorScheme.primary,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(
+                widget.isRegistered ? 'Unregister' : 'Register',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
     }
   }
 
@@ -239,49 +327,7 @@ class _EventDetailsModalState extends State<EventDetailsModal> {
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
-                onPressed: widget.isCheckingIn
-                    ? null
-                    : () {
-                        if (widget.checkInError != null &&
-                            widget.checkInError!
-                                .contains('already checked in')) {
-                          Navigator.pop(context);
-                          return;
-                        }
-                        widget.onCheckIn();
-                      },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: widget.isCheckingIn
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : Text(
-                        widget.checkInError != null &&
-                                widget.checkInError!
-                                    .contains('already checked in')
-                            ? 'Close'
-                            : widget.checkInError != null
-                                ? 'Try Again'
-                                : 'Check In',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-              ),
+              child: _buildActionButton(),
             ),
           ],
         ),
