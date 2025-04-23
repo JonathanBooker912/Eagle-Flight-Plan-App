@@ -1,6 +1,9 @@
 import 'dart:convert';
+import '../services/api_session_storage.dart';
+
 import '../models/strength.dart';
 import 'service_locator.dart';
+import 'api_service.dart';
 
 class StrengthResponse {
   final List<StrengthModel> strengths;
@@ -14,19 +17,23 @@ class StrengthResponse {
   });
 }
 
-class StrengthService {
-  StrengthService();
+class StrengthService extends ApiService {
+  StrengthService({required super.baseUrl});
 
-  Future<StrengthResponse> getStrengthsForUser(int userId, {int page = 1, int pageSize = 5}) async {
+  Future<StrengthResponse> getStrengthsForUser(
+      {int page = 1, int pageSize = 5}) async {
+    final userId = (await ApiSessionStorage.getSession()).userId;
+
     try {
-      print('🔍 Fetching strengths for user $userId (page $page, size $pageSize)');
-      
-      final response = await ServiceLocator().api.get(
+      print(
+          '🔍 Fetching strengths for user $userId (page $page, size $pageSize)');
+
+      final response = await get(
         '/strengths/student/$userId',
       );
-      
+
       print('📦 Raw API Response: $response');
-      
+
       if (response == null) {
         print('❌ No response received from API');
         return StrengthResponse(
@@ -55,17 +62,18 @@ class StrengthService {
         // If response is already a List, use it directly
         strengthsJson = (response as List<dynamic>?) ?? [];
       }
-      
+
       print('📊 Response Stats:');
       print('   - Number of strengths: ${strengthsJson.length}');
-      
-      final strengths = strengthsJson.map((json) => StrengthModel.fromJson(json)).toList();
-      
+
+      final strengths =
+          strengthsJson.map((json) => StrengthModel.fromJson(json)).toList();
+
       print('🎯 Parsed Strengths:');
       for (var strength in strengths) {
         print('   - ${strength.name} (Domain: ${strength.domain})');
       }
-      
+
       return StrengthResponse(
         strengths: strengths,
         totalPages: 1, // Since the backend doesn't paginate
@@ -79,4 +87,4 @@ class StrengthService {
       );
     }
   }
-} 
+}
