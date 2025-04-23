@@ -48,10 +48,26 @@ class _LoginPageState extends State<LoginPage> {
       );
       final idToken = await userCredential.user?.getIdToken();
 
+      // Login to backend
       await _serviceLocator.auth.login(idToken);
 
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/home');
+      // Check if student exists
+      try {
+        final student = await _serviceLocator.student.getStudentForUserId();
+        if (student == null || student.graduationDate == null || student.semestersFromGrad == null) {
+          if (mounted) {
+            Navigator.pushReplacementNamed(context, '/onboarding');
+          }
+        } else {
+          if (mounted) {
+            Navigator.pushReplacementNamed(context, '/home');
+          }
+        }
+      } catch (e) {
+        // If student doesn't exist, go to onboarding
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/onboarding');
+        }
       }
     } catch (e) {
       print('Error signing in with Google: $e');
