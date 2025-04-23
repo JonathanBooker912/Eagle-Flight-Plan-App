@@ -34,6 +34,11 @@ class AppTheme {
         error: lightErrorColor,
       ),
       textTheme: const TextTheme(
+        titleLarge: TextStyle(
+          color: lightTextPrimary,
+          fontSize: 36,
+          fontWeight: FontWeight.bold,
+        ),
         displayLarge: TextStyle(
           color: lightTextPrimary,
           fontSize: 36,
@@ -81,6 +86,16 @@ class AppTheme {
         error: darkErrorColor,
       ),
       textTheme: const TextTheme(
+        titleLarge: TextStyle(
+          color: darkTextPrimary,
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+        ),
+        titleMedium: TextStyle(
+          color: darkTextPrimary,
+          fontSize: 21,
+          fontWeight: FontWeight.bold,
+        ),
         displayLarge: TextStyle(
           color: darkTextPrimary,
           fontSize: 36,

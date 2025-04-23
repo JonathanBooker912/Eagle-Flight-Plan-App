@@ -38,19 +38,8 @@ class EventService extends ApiService {
       print(
           'Parsed events: ${eventsJson.length}, total: $total, totalPages: $totalPages');
 
-      // Get registered events for the user
-      final registeredEventsResponse = await get('/event/registered/$userId');
-      final List<dynamic> registeredEventsJson =
-          registeredEventsResponse['events'] ?? [];
-      final Set<int> registeredEventIds =
-          registeredEventsJson.map((e) => e['id'] as int).toSet();
-
       return EventResponse(
-        events: eventsJson.map((json) {
-          final event = Event.fromJson(json);
-          event.isRegistered = registeredEventIds.contains(event.id);
-          return event;
-        }).toList(),
+        events: eventsJson.map((json) => Event.fromJson(json)).toList(),
         totalPages: totalPages,
       );
     } catch (e) {
@@ -75,17 +64,30 @@ class EventService extends ApiService {
     }
   }
 
-  Future<void> unregisterFromEvent(int userId, int eventId) async {
+  Future<void> unregisterFromEvent(int eventId) async {
+    final studentId = (await ApiSessionStorage.getSession()).studentId;
     try {
-      print('Unregistering user $userId from event $eventId');
+      print('Unregistering student $studentId from event $eventId');
       await delete(
-        '/event/$eventId/unregister?studentIds=$userId',
+        '/event/$eventId/unregister',
+        body: {
+          'studentIds': [studentId.toString()]
+        },
       );
       print('Unregistration successful');
     } catch (e) {
       print('Error unregistering from event: $e');
       rethrow;
     }
+  }
+
+  Future<List<Event>> getRegisteredEvents(int userId, int eventId) async {
+    final studentId = (await ApiSessionStorage.getSession()).studentId;
+    final response = await get(
+      '/event/student/$studentId/registered-events',
+    );
+    final List<dynamic> data = response['data'];
+    return data.map((json) => Event.fromJson(json)).toList();
   }
 
   Future<Event> lookupEvent(String checkInCode) async {

@@ -25,11 +25,13 @@ class _CalendarPageState extends State<CalendarPage> {
   late int _userId;
   late ServiceLocator _serviceLocator = ServiceLocator();
   List<Event> _events = [];
+  Set<int> _registeredEventIds = {};
   bool _isLoading = true;
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
   CalendarFormat _calendarFormat = CalendarFormat.month;
   Map<DateTime, List<Event>> _eventsByDate = {};
+  bool _isDisposed = false;
 
   @override
   void initState() {
@@ -37,13 +39,21 @@ class _CalendarPageState extends State<CalendarPage> {
     _initializeData();
   }
 
+  @override
+  void dispose() {
+    _isDisposed = true;
+    super.dispose();
+  }
+
   Future<void> _initializeData() async {
+    if (_isDisposed) return;
     _userId = (await ApiSessionStorage.getSession()).userId;
     print('CalendarPage initState - userId: ${_userId}');
     _checkSession();
   }
 
   Future<void> _checkSession() async {
+    if (_isDisposed) return;
     try {
       final session = await ApiSessionStorage.getSession();
       print('Current session: ${session.toJsonString()}');
@@ -51,30 +61,48 @@ class _CalendarPageState extends State<CalendarPage> {
       _loadEvents();
     } catch (e) {
       print('Error checking session: $e');
-      setState(() {
-        _isLoading = false;
-      });
-      _showError('Unable to load session. Please try again later.');
+      if (!_isDisposed) {
+        setState(() {
+          _isLoading = false;
+        });
+        _showError('Unable to load session. Please try again later.');
+      }
     }
   }
 
   Future<void> _loadEvents() async {
+    if (_isDisposed) return;
     print('Loading events for user: ${_userId}');
     try {
-      final response = await _serviceLocator.event.getEventsForUser(_userId);
-      print('Received response: ${response} events');
-      setState(() {
-        _events = response.events;
-        _eventsByDate = _groupEventsByDate(_events);
-        _isLoading = false;
-      });
+      // Get all available events
+      final allEventsResponse =
+          await _serviceLocator.event.getEventsForUser(_userId);
+      if (_isDisposed) return;
+      print('Received all events: ${allEventsResponse.events.length} events');
+
+      // Get registered events
+      final registeredEvents =
+          await _serviceLocator.event.getRegisteredEvents(_userId, 0);
+      if (_isDisposed) return;
+      print('Received registered events: ${registeredEvents.length} events');
+
+      if (!_isDisposed) {
+        setState(() {
+          _events = allEventsResponse.events;
+          _registeredEventIds = registeredEvents.map((e) => e.id).toSet();
+          _eventsByDate = _groupEventsByDate(_events);
+          _isLoading = false;
+        });
+      }
       print('Events grouped by date: ${_eventsByDate.length} dates');
     } catch (e) {
       print('Error loading events: $e');
-      setState(() {
-        _isLoading = false;
-      });
-      _showError('Unable to load events. Please try again later.');
+      if (!_isDisposed) {
+        setState(() {
+          _isLoading = false;
+        });
+        _showError('Unable to load events. Please try again later.');
+      }
     }
   }
 
@@ -139,8 +167,7 @@ class _CalendarPageState extends State<CalendarPage> {
           },
           onRegister: () => _registerForEvent(event),
           onUnregister: () => _unregisterFromEvent(event),
-          isRegistered:
-              _events.any((e) => e.id == event.id && e.isRegistered == true),
+          isRegistered: _registeredEventIds.contains(event.id),
           modalType: EventModalType.register,
         ),
       ),
@@ -148,68 +175,56 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   Future<void> _registerForEvent(Event event) async {
+    if (_isDisposed) return;
     print('Registering for event: ${event.name}');
     try {
       await _serviceLocator.event.registerForEvent(_userId, event.id);
-      setState(() {
-        // Update the event's registration status
-        final updatedEvent = Event(
-          id: event.id,
-          name: event.name,
-          description: event.description,
-          startTime: event.startTime,
-          endTime: event.endTime,
-          location: event.location,
-          isRegistered: true,
-        );
-
-        // Replace the event in the list
-        final index = _events.indexWhere((e) => e.id == event.id);
-        if (index != -1) {
-          _events[index] = updatedEvent;
-        } else {
-          _events.add(updatedEvent);
-        }
-
-        _eventsByDate = _groupEventsByDate(_events);
-      });
+      if (_isDisposed) return;
+      // Refresh the list of registered events
+      final registeredEvents =
+          await _serviceLocator.event.getRegisteredEvents(_userId, 0);
+      if (!_isDisposed) {
+        setState(() {
+          _registeredEventIds = registeredEvents.map((e) => e.id).toSet();
+          _eventsByDate = _groupEventsByDate(_events);
+        });
+      }
       print('Successfully registered for event');
-      Navigator.pop(context);
+      if (!_isDisposed) {
+        Navigator.pop(context);
+      }
     } catch (e) {
       print('Error registering for event: $e');
-      _showError('Unable to register for event. Please try again.');
+      if (!_isDisposed) {
+        _showError('Unable to register for event. Please try again.');
+      }
     }
   }
 
   Future<void> _unregisterFromEvent(Event event) async {
+    if (_isDisposed) return;
     print('Unregistering from event: ${event.name}');
     try {
-      await _serviceLocator.event.unregisterFromEvent(_userId, event.id);
-      setState(() {
-        // Update the event's registration status
-        final updatedEvent = Event(
-          id: event.id,
-          name: event.name,
-          description: event.description,
-          startTime: event.startTime,
-          endTime: event.endTime,
-          location: event.location,
-          isRegistered: false,
-        );
-
-        // Replace the event in the list
-        final index = _events.indexWhere((e) => e.id == event.id);
-        if (index != -1) {
-          _events[index] = updatedEvent;
-        }
-
-        _eventsByDate = _groupEventsByDate(_events);
-      });
+      await _serviceLocator.event.unregisterFromEvent(event.id);
+      if (_isDisposed) return;
+      // Refresh the list of registered events
+      final registeredEvents =
+          await _serviceLocator.event.getRegisteredEvents(_userId, 0);
+      if (!_isDisposed) {
+        setState(() {
+          _registeredEventIds = registeredEvents.map((e) => e.id).toSet();
+          _eventsByDate = _groupEventsByDate(_events);
+        });
+      }
       print('Successfully unregistered from event');
-      Navigator.pop(context);
+      if (!_isDisposed) {
+        Navigator.pop(context);
+      }
     } catch (e) {
       print('Error unregistering from event: $e');
-      _showError('Unable to unregister from event. Please try again.');
+      if (!_isDisposed) {
+        _showError('Unable to unregister from event. Please try again.');
+      }
     }
   }
 
@@ -223,7 +238,7 @@ class _CalendarPageState extends State<CalendarPage> {
       body: _isLoading
           ? Padding(
               padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+                  const EdgeInsets.symmetric(horizontal: 6.0, vertical: 24.0),
               child: Column(
                 children: [
                   const SizedBox(height: 16),
@@ -331,7 +346,7 @@ class _CalendarPageState extends State<CalendarPage> {
             )
           : Padding(
               padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+                  const EdgeInsets.symmetric(horizontal: 6.0, vertical: 24.0),
               child: Column(
                 children: [
                   const SizedBox(height: 16),
@@ -349,7 +364,16 @@ class _CalendarPageState extends State<CalendarPage> {
                           isSameDay(_selectedDay, day),
                       calendarFormat: _calendarFormat,
                       eventLoader: (day) => _eventsByDate[day] ?? [],
-                      startingDayOfWeek: StartingDayOfWeek.monday,
+                      startingDayOfWeek: StartingDayOfWeek.sunday,
+                      daysOfWeekHeight: 32,
+                      daysOfWeekStyle: DaysOfWeekStyle(
+                        weekdayStyle: textTheme.bodyMedium!.copyWith(
+                          color: colorScheme.onSurface,
+                        ),
+                        weekendStyle: textTheme.bodyMedium!.copyWith(
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
                       calendarStyle: CalendarStyle(
                         outsideDaysVisible: false,
                         weekendTextStyle: textTheme.bodyLarge!.copyWith(
@@ -374,7 +398,6 @@ class _CalendarPageState extends State<CalendarPage> {
                           shape: BoxShape.circle,
                         ),
                         markerSize: 6,
-                        cellMargin: const EdgeInsets.all(4),
                       ),
                       headerStyle: HeaderStyle(
                         formatButtonVisible: false,
@@ -405,7 +428,7 @@ class _CalendarPageState extends State<CalendarPage> {
                             children: [
                               Text(
                                 '${_getMonthName(date.month)} ${date.year}',
-                                style: textTheme.titleLarge,
+                                style: textTheme.titleMedium,
                               ),
                               Chip(
                                 label: Text(

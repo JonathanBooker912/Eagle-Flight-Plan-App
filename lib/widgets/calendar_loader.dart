@@ -83,7 +83,7 @@ class _CalendarLoaderState extends State<CalendarLoader>
                     mainAxisSpacing: 8,
                     crossAxisSpacing: 8,
                   ),
-                  itemCount: 42, // 6 rows * 7 days
+                  itemCount: 33, // 6 rows * 7 days
                   itemBuilder: (context, index) {
                     return Container(
                       decoration: BoxDecoration(

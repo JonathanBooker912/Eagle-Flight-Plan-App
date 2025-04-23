@@ -17,7 +17,6 @@ class Event {
   final DateTime startTime;
   final DateTime endTime;
   final String description;
-  bool isRegistered;
   late List<FlightPlanItem> fulfillableItems;
 
   Event({
@@ -27,7 +26,6 @@ class Event {
     required this.startTime,
     required this.endTime,
     required this.description,
-    this.isRegistered = false,
     this.fulfillableItems = const [],
   });
 
@@ -41,7 +39,6 @@ class Event {
       endTime:
           DateTime.parse(json['endTime'] ?? DateTime.now().toIso8601String()),
       description: json['description'] ?? '',
-      isRegistered: json['isRegistered'] ?? false,
     );
   }
 
