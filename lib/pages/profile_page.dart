@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../theme/app_theme.dart';
 import '../models/strength.dart';
 import '../models/link.dart';
@@ -109,6 +110,12 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  void _logout() {
+    GoogleSignIn().signOut();
+    ApiSessionStorage.clearSession();
+    Navigator.of(context).pushReplacementNamed("/login");
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -119,6 +126,10 @@ class _ProfilePageState extends State<ProfilePage> {
         final isTablet = constraints.maxWidth < 960;
 
         return Scaffold(
+          floatingActionButton: FloatingActionButton(
+            onPressed: () => _logout(),
+            child: const Icon(Icons.logout),
+          ),
           backgroundColor: colorScheme.background,
           body: SingleChildScrollView(
             child: Padding(
