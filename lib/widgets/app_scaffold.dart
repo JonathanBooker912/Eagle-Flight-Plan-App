@@ -24,8 +24,10 @@ class AppScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: colorScheme.background,
       bottomNavigationBar:
           stackNavigationBar ? null : NavigationBar(currentRoute: currentRoute),
       body: stackNavigationBar
@@ -50,10 +52,8 @@ class NavigationBar extends StatelessWidget {
 
   const NavigationBar({super.key, required this.currentRoute});
 
-  Color _getIconColor(String route) {
-    return currentRoute == route
-        ? AppTheme.primaryColor
-        : AppTheme.backgroundColor;
+  Color _getIconColor(String route, ColorScheme colorScheme) {
+    return currentRoute == route ? colorScheme.primary : colorScheme.background;
   }
 
   void _navigateTo(BuildContext context, String route) {
@@ -95,6 +95,8 @@ class NavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Padding(
       padding: EdgeInsets.all(16),
       child: Card(
@@ -110,7 +112,7 @@ class NavigationBar extends StatelessWidget {
                 icon: Icon(
                   MdiIcons.bird,
                   size: 32,
-                  color: _getIconColor('/home'),
+                  color: _getIconColor('/home', colorScheme),
                 ),
               ),
               IconButton(
@@ -118,7 +120,7 @@ class NavigationBar extends StatelessWidget {
                 icon: Icon(
                   Icons.event,
                   size: 32,
-                  color: _getIconColor('/calendar'),
+                  color: _getIconColor('/calendar', colorScheme),
                 ),
               ),
               IconButton(
@@ -126,7 +128,7 @@ class NavigationBar extends StatelessWidget {
                 icon: Icon(
                   Icons.qr_code_2,
                   size: 32,
-                  color: _getIconColor('/qr'),
+                  color: _getIconColor('/qr', colorScheme),
                 ),
               ),
               IconButton(
@@ -134,7 +136,7 @@ class NavigationBar extends StatelessWidget {
                 icon: Icon(
                   Icons.notifications,
                   size: 32,
-                  color: _getIconColor('/notifications'),
+                  color: _getIconColor('/notifications', colorScheme),
                 ),
               ),
               IconButton(
@@ -142,7 +144,7 @@ class NavigationBar extends StatelessWidget {
                 icon: Icon(
                   Icons.person,
                   size: 32,
-                  color: _getIconColor('/profile'),
+                  color: _getIconColor('/profile', colorScheme),
                 ),
               ),
             ],

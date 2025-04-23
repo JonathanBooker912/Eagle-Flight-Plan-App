@@ -1,5 +1,8 @@
 import 'dart:convert';
+import 'package:eagle_flight_plan/services/api_session_storage.dart';
+
 import 'service_locator.dart';
+import 'api_service.dart';
 
 class UserProfile {
   final int id;
@@ -21,21 +24,23 @@ class UserProfile {
       id: json['id'] as int,
       email: json['email'] as String,
       fullName: json['fullName'] as String,
-      profileDescription: json['profileDescription'] as String? ?? 'No description',
+      profileDescription:
+          json['profileDescription'] as String? ?? 'No description',
       major: json['major'] as String? ?? 'Undeclared',
     );
   }
 }
 
-class UserService {
-  UserService();
+class UserService extends ApiService {
+  UserService({required super.baseUrl});
 
-  Future<UserProfile> getUserProfile(int userId) async {
+  Future<UserProfile> getUserProfile() async {
+    final userId = (await ApiSessionStorage.getSession()).userId;
     try {
-      final response = await ServiceLocator().api.get(
+      final response = await get(
         '/user/$userId',
       );
-      
+
       if (response == null) {
         throw Exception('No response received from API');
       }

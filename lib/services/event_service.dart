@@ -64,17 +64,30 @@ class EventService extends ApiService {
     }
   }
 
-  Future<void> unregisterFromEvent(int userId, int eventId) async {
+  Future<void> unregisterFromEvent(int eventId) async {
+    final studentId = (await ApiSessionStorage.getSession()).studentId;
     try {
-      print('Unregistering user $userId from event $eventId');
+      print('Unregistering student $studentId from event $eventId');
       await delete(
-        '/event/$eventId/unregister?studentIds=$userId',
+        '/event/$eventId/unregister',
+        body: {
+          'studentIds': [studentId.toString()]
+        },
       );
       print('Unregistration successful');
     } catch (e) {
       print('Error unregistering from event: $e');
       rethrow;
     }
+  }
+
+  Future<List<Event>> getRegisteredEvents(int userId, int eventId) async {
+    final studentId = (await ApiSessionStorage.getSession()).studentId;
+    final response = await get(
+      '/event/student/$studentId/registered-events',
+    );
+    final List<dynamic> data = response['data'];
+    return data.map((json) => Event.fromJson(json)).toList();
   }
 
   Future<Event> lookupEvent(String checkInCode) async {

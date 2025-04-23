@@ -45,12 +45,13 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Eagle Flight Plan',
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
       initialRoute: widget.initialRoute,
       routes: {
         '/login': (context) => const LoginPage(),
-        '/home':
-            (context) => AppScaffold(
+        '/home': (context) => AppScaffold(
               title: 'Eagle Flight Plan',
               body: FlightPlanPage(),
               currentRoute: '/home',

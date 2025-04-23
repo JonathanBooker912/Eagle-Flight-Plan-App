@@ -7,6 +7,8 @@ import '../services/link_service.dart';
 import '../services/user_service.dart';
 import '../services/badge_service.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../services/service_locator.dart';
+import '../services/api_session_storage.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -25,10 +27,7 @@ class _ProfilePageState extends State<ProfilePage> {
   bool _isLoading = true;
   UserProfile? _userProfile;
   int? _expandedStrengthIndex; // Track which strength is expanded
-  final StrengthService _strengthService = StrengthService();
-  final LinkService _linkService = LinkService();
-  final UserService _userService = UserService();
-  final BadgeService _badgeService = BadgeService();
+  late final ServiceLocator _serviceLocator = ServiceLocator();
 
   @override
   void initState() {
@@ -42,23 +41,23 @@ class _ProfilePageState extends State<ProfilePage> {
     });
 
     try {
-      const userId = 1; // TODO: Replace with actual user ID
-      final userProfileFuture = _userService.getUserProfile(userId);
-      final strengthsFuture = _strengthService.getStrengthsForUser(userId);
-      final linksFuture = _linkService.getLinksForUser(userId);
-      final badgesFuture = _badgeService.getBadgesForStudent(userId, page: _currentPage, pageSize: _pageSize);
-      
-      final results = await Future.wait([userProfileFuture, strengthsFuture, linksFuture, badgesFuture]);
-      
+      final userProfileFuture = _serviceLocator.user.getUserProfile();
+      final strengthsFuture = _serviceLocator.strength.getStrengthsForUser();
+      final linksFuture = _serviceLocator.link.getLinksForUser();
+      final badgesFuture = _serviceLocator.badge
+          .getBadgesForStudent(page: _currentPage, pageSize: _pageSize);
+
+      final results = await Future.wait(
+          [userProfileFuture, strengthsFuture, linksFuture, badgesFuture]);
+
       final userProfile = results[0] as UserProfile;
       final strengthResponse = results[1] as StrengthResponse;
       final links = results[2] as List<LinkModel>;
       final badgeResponse = results[3] as BadgeResponse;
-      
+
       setState(() {
         _userProfile = userProfile;
         _strengths = strengthResponse.strengths;
-        _totalPages = strengthResponse.totalPages;
         _links = links;
         _badges = badgeResponse.badges;
         _totalPages = (badgeResponse.total / _pageSize).ceil();
@@ -79,13 +78,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _loadBadges() async {
     try {
-      const userId = 1; // TODO: Replace with actual user ID
-      final badgeResponse = await _badgeService.getBadgesForStudent(
-        userId,
+      final badgeResponse = await _serviceLocator.badge.getBadgesForStudent(
         page: _currentPage,
         pageSize: _pageSize,
       );
-      
+
       setState(() {
         _badges = badgeResponse.badges;
         _totalPages = (badgeResponse.total / _pageSize).ceil();
@@ -114,12 +111,15 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final isMobile = constraints.maxWidth < 600;
         final isTablet = constraints.maxWidth < 960;
 
         return Scaffold(
+          backgroundColor: colorScheme.background,
           body: SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -127,29 +127,29 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: [
                   // Profile and About Me Section
                   Card(
-                    color: const Color(0xFF32343A),
+                    color: colorScheme.surface,
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: isMobile
-                        ? Column(
-                            children: [
-                              _buildProfilePicture(),
-                              const SizedBox(height: 16),
-                              _buildAboutMeSection(),
-                            ],
-                          )
-                        : Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(
-                                child: _buildProfilePicture(),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: _buildAboutMeSection(),
-                              ),
-                            ],
-                          ),
+                          ? Column(
+                              children: [
+                                _buildProfilePicture(),
+                                const SizedBox(height: 16),
+                                _buildAboutMeSection(),
+                              ],
+                            )
+                          : Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  child: _buildProfilePicture(),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _buildAboutMeSection(),
+                                ),
+                              ],
+                            ),
                     ),
                   ),
 
@@ -157,7 +157,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                   // Links Section
                   Card(
-                    color: const Color(0xFF32343A),
+                    color: colorScheme.surface,
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: _buildLinksSection(),
@@ -168,25 +168,25 @@ class _ProfilePageState extends State<ProfilePage> {
 
                   // Bottom Section
                   isMobile
-                    ? Column(
-                        children: [
-                          _buildBadgesSection(),
-                          const SizedBox(height: 8),
-                          _buildStrengthsSection(),
-                        ],
-                      )
-                    : Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: _buildBadgesSection(),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: _buildStrengthsSection(),
-                          ),
-                        ],
-                      ),
+                      ? Column(
+                          children: [
+                            _buildBadgesSection(),
+                            const SizedBox(height: 8),
+                            _buildStrengthsSection(),
+                          ],
+                        )
+                      : Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: _buildBadgesSection(),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _buildStrengthsSection(),
+                            ),
+                          ],
+                        ),
                 ],
               ),
             ),
@@ -249,8 +249,8 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         const SizedBox(height: 8),
         Container(
-         // padding: const EdgeInsets.all(12),
-         width: double.infinity,
+          // padding: const EdgeInsets.all(12),
+          width: double.infinity,
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
@@ -308,33 +308,35 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
               const SizedBox(height: 8),
-              ..._links.map((link) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      link.websiteName,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    GestureDetector(
-                      onTap: () => _launchUrl(link.link),
-                      child: Text(
-                        link.link,
-                        style: const TextStyle(
-                          color: Colors.blue,
-                          decoration: TextDecoration.underline,
+              ..._links
+                  .map((link) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Text(
+                              link.websiteName,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: () => _launchUrl(link.link),
+                              child: Text(
+                                link.link,
+                                style: const TextStyle(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ),
-                  ],
-                ),
-              )).toList(),
+                      ))
+                  .toList(),
             ],
           ),
       ],
@@ -342,8 +344,9 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildBadgesSection() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Card(
-      color: AppTheme.surfaceColor,
+      color: colorScheme.surface,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -390,18 +393,20 @@ class _ProfilePageState extends State<ProfilePage> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            if (badge.imageUrl != null)
-                              Image.network(
-                                badge.imageUrl!,
-                                height: 60,
-                                width: 60,
-                              )
-                            else
-                              const Icon(Icons.workspace_premium, size: 60, color: Colors.white),
+                            // if (badge.imageUrl != null)
+                            //   Image.network(
+                            //     badge.imageUrl!,
+                            //     height: 60,
+                            //     width: 60,
+                            //   )
+
+                            const Icon(Icons.workspace_premium,
+                                size: 60, color: Colors.white),
                             const SizedBox(height: 8),
                             Text(
                               badge.name,
                               textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
@@ -420,7 +425,8 @@ class _ProfilePageState extends State<ProfilePage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.chevron_left, color: Colors.white),
+                            icon: const Icon(Icons.chevron_left,
+                                color: Colors.white),
                             onPressed: _currentPage > 1
                                 ? () {
                                     setState(() {
@@ -435,7 +441,8 @@ class _ProfilePageState extends State<ProfilePage> {
                             style: const TextStyle(color: Colors.white),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.chevron_right, color: Colors.white),
+                            icon: const Icon(Icons.chevron_right,
+                                color: Colors.white),
                             onPressed: _currentPage < _totalPages
                                 ? () {
                                     setState(() {
@@ -457,8 +464,9 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildStrengthsSection() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Card(
-      color: AppTheme.surfaceColor,
+      color: colorScheme.surface,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -505,7 +513,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return StatefulBuilder(
       builder: (context, setState) {
         final isExpanded = _expandedStrengthIndex == index;
-        
+
         Color getDomainColor(String domain) {
           switch (domain) {
             case 'Executing':
@@ -535,7 +543,7 @@ class _ProfilePageState extends State<ProfilePage> {
             duration: const Duration(milliseconds: 300),
             height: isExpanded ? 175 : 50,
             child: Card(
-              color:const Color(0xFF42444C),
+              color: const Color(0xFF42444C),
               child: Padding(
                 padding: const EdgeInsets.symmetric(),
                 child: Column(

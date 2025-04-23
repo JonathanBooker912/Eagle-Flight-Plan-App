@@ -56,10 +56,11 @@ class _LoginPageState extends State<LoginPage> {
     } catch (e) {
       print('Error signing in with Google: $e');
       if (mounted) {
+        final colorScheme = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error signing in: $e'),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: colorScheme.error,
           ),
         );
       }
@@ -74,8 +75,11 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: colorScheme.background,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 32, 16, 32),
@@ -86,7 +90,7 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   Expanded(
                     child: Card(
-                      color: AppTheme.surfaceColor,
+                      color: colorScheme.surface,
                       elevation: 0,
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
@@ -95,16 +99,12 @@ class _LoginPageState extends State<LoginPage> {
                           children: [
                             Text(
                               'Career Services:',
-                              style: TextStyle(
-                                fontSize: 21,
-                                fontWeight: FontWeight.normal,
-                                color: AppTheme.textPrimary,
-                              ),
+                              style: textTheme.bodyLarge,
                               textAlign: TextAlign.left,
                             ),
                             Text(
                               'Eagle \nFlight Plan',
-                              style: Theme.of(context).textTheme.displayLarge,
+                              style: textTheme.displayLarge,
                               textAlign: TextAlign.left,
                             ),
                             Align(
@@ -124,7 +124,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 16),
               Card(
-                color: AppTheme.surfaceColor,
+                color: colorScheme.surface,
                 elevation: 0,
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -133,42 +133,42 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       Text(
                         "Please sign in to continue",
-                        style: Theme.of(context).textTheme.bodyLarge,
+                        style: textTheme.bodyLarge,
                       ),
                       const SizedBox(height: 16),
                       _isLoading
                           ? const CircularProgressIndicator()
                           : ElevatedButton(
-                            onPressed: _signInWithGoogle,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.secondaryColor,
-                              foregroundColor: AppTheme.textSecondary,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Image.asset(
-                                  'assets/google_logo.png',
-                                  height: 24,
+                              onPressed: _signInWithGoogle,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: colorScheme.secondary,
+                                foregroundColor: colorScheme.onSecondary,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
                                 ),
-                                const SizedBox(width: 10),
-                                const Flexible(
-                                  child: Text(
-                                    'Sign in with Google',
-                                    style: TextStyle(fontSize: 16),
-                                    overflow: TextOverflow.ellipsis,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.asset(
+                                    'assets/google_logo.png',
+                                    height: 24,
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(width: 10),
+                                  const Flexible(
+                                    child: Text(
+                                      'Sign in with Google',
+                                      style: TextStyle(fontSize: 16),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
                     ],
                   ),
                 ),
