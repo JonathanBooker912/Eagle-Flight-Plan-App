@@ -5,6 +5,7 @@ import '../pages/flight_plan_page.dart';
 import '../pages/profile_page.dart';
 import '../pages/calendar_page.dart';
 import '../pages/check_in_page.dart';
+import '../pages/notification_page.dart';
 
 class AppScaffold extends StatelessWidget {
   final Widget body;
@@ -69,7 +70,7 @@ class NavigationBar extends StatelessWidget {
         page = const EventCheckInPage();
         break;
       case '/notifications':
-        page = Center(child: Text('Notifications Page'));
+        page = NotificationPage();
         break;
       case '/profile':
         page = const ProfilePage();

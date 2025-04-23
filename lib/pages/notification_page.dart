@@ -2,14 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/notification.dart';
 import '../services/notification_service.dart';
+import '../services/api_session_storage.dart';
+import '../theme/app_theme.dart';
 
 class NotificationPage extends StatefulWidget {
-  final int userId;
-
-  const NotificationPage({
-    Key? key,
-    required this.userId,
-  }) : super(key: key);
+  const NotificationPage({super.key});
 
   @override
   _NotificationPageState createState() => _NotificationPageState();
@@ -42,7 +39,8 @@ class _NotificationPageState extends State<NotificationPage> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
       if (!_isLoadingMore && _hasMore && _currentPage < _totalPages) {
         _loadMoreNotifications();
       }
@@ -51,11 +49,12 @@ class _NotificationPageState extends State<NotificationPage> {
 
   Future<void> _loadNotifications() async {
     try {
+      print('🔄 Loading notifications (page $_currentPage)');
       final response = await _notificationService.getNotificationsForUser(
-        widget.userId,
         page: _currentPage,
         pageSize: _pageSize,
       );
+      print('✅ Successfully loaded notifications');
       setState(() {
         _notifications = response.notifications;
         _totalPages = response.totalPages;
@@ -63,6 +62,7 @@ class _NotificationPageState extends State<NotificationPage> {
         _isLoading = false;
       });
     } catch (e) {
+      print('❌ Error loading notifications: $e');
       setState(() {
         _isLoading = false;
       });
@@ -78,12 +78,13 @@ class _NotificationPageState extends State<NotificationPage> {
     });
 
     try {
+      print('🔄 Loading more notifications (page ${_currentPage + 1})');
       final nextPage = _currentPage + 1;
       final response = await _notificationService.getNotificationsForUser(
-        widget.userId,
         page: nextPage,
         pageSize: _pageSize,
       );
+      print('✅ Successfully loaded more notifications');
 
       setState(() {
         _notifications.addAll(response.notifications);
@@ -93,6 +94,7 @@ class _NotificationPageState extends State<NotificationPage> {
         _isLoadingMore = false;
       });
     } catch (e) {
+      print('❌ Error loading more notifications: $e');
       setState(() {
         _isLoadingMore = false;
       });
@@ -102,7 +104,9 @@ class _NotificationPageState extends State<NotificationPage> {
 
   Future<void> _markAsRead(NotificationModel notification) async {
     try {
-      await _notificationService.markAsRead(widget.userId, notification.id);
+      print('📝 Marking notification ${notification.id} as read');
+      await _notificationService.markAsRead(notification.id);
+      print('✅ Successfully marked notification as read');
       setState(() {
         _notifications = _notifications.map((n) {
           if (n.id == notification.id) {
@@ -120,6 +124,7 @@ class _NotificationPageState extends State<NotificationPage> {
         }).toList();
       });
     } catch (e) {
+      print('❌ Error marking notification as read: $e');
       _showError('Unable to mark notification as read. Please try again.');
     }
   }
@@ -128,8 +133,10 @@ class _NotificationPageState extends State<NotificationPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
+        backgroundColor: Theme.of(context).colorScheme.error,
         action: SnackBarAction(
           label: 'Dismiss',
+          textColor: Colors.white,
           onPressed: () {
             ScaffoldMessenger.of(context).hideCurrentSnackBar();
           },
@@ -142,7 +149,7 @@ class _NotificationPageState extends State<NotificationPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.green,
+        backgroundColor: Theme.of(context).colorScheme.primary,
       ),
     );
   }
@@ -165,9 +172,9 @@ class _NotificationPageState extends State<NotificationPage> {
               Navigator.pop(context);
               _deleteSelectedNotifications();
             },
-            child: const Text(
+            child: Text(
               'Delete',
-              style: TextStyle(color: Colors.red),
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
           ),
         ],
@@ -180,10 +187,12 @@ class _NotificationPageState extends State<NotificationPage> {
 
     try {
       await Future.wait(
-        _selectedNotifications.map((id) => _notificationService.deleteNotification(id)),
+        _selectedNotifications
+            .map((id) => _notificationService.deleteNotification(id)),
       );
       setState(() {
-        _notifications.removeWhere((n) => _selectedNotifications.contains(n.id));
+        _notifications
+            .removeWhere((n) => _selectedNotifications.contains(n.id));
         _selectedNotifications.clear();
       });
       _showSuccess('Notifications deleted successfully');
@@ -210,16 +219,16 @@ class _NotificationPageState extends State<NotificationPage> {
     if (!notification.read) {
       _markAsRead(notification);
     }
-    
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         height: MediaQuery.of(context).size.height * 0.7,
-        decoration: const BoxDecoration(
-          color: Color(0xFF1E1E1E),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
         ),
         child: Column(
           children: [
@@ -230,20 +239,17 @@ class _NotificationPageState extends State<NotificationPage> {
                 children: [
                   Text(
                     notification.header,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white),
+                    icon: Icon(Icons.close,
+                        color: Theme.of(context).colorScheme.onSurface),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
               ),
             ),
-            const Divider(color: Colors.grey),
+            Divider(color: Theme.of(context).colorScheme.outline),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
@@ -252,21 +258,15 @@ class _NotificationPageState extends State<NotificationPage> {
                   children: [
                     Text(
                       'From: ${notification.user['fullName']}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
+                      style: Theme.of(context).textTheme.bodyLarge,
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Sent: ${_formatDate(notification.createdAt)}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
+                      style: Theme.of(context).textTheme.bodyLarge,
                     ),
                     const SizedBox(height: 16),
-                    const Divider(color: Colors.grey),
+                    Divider(color: Theme.of(context).colorScheme.outline),
                     const SizedBox(height: 16),
                     Container(
                       constraints: BoxConstraints(
@@ -275,10 +275,7 @@ class _NotificationPageState extends State<NotificationPage> {
                       child: SingleChildScrollView(
                         child: Text(
                           notification.description,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                          ),
+                          style: Theme.of(context).textTheme.bodyLarge,
                         ),
                       ),
                     ),
@@ -303,60 +300,57 @@ class _NotificationPageState extends State<NotificationPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    double height = MediaQuery.of(context).viewPadding.top;
+
     return Scaffold(
       floatingActionButton: _selectedNotifications.isNotEmpty
-          ? FloatingActionButton(
-              onPressed: () {
-                showModalBottomSheet(
-                  context: context,
-                  builder: (context) => Container(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ListTile(
-                          leading: const Icon(Icons.delete, color: Colors.red),
-                          title: const Text('Delete Selected'),
-                          onTap: () {
-                            Navigator.pop(context);
-                            _showDeleteConfirmation();
-                          },
-                        ),
-                        ListTile(
-                          leading: const Icon(Icons.mark_email_read),
-                          title: const Text('Mark Selected as Read'),
-                          onTap: () {
-                            Navigator.pop(context);
-                            _markSelectedAsRead();
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-              child: const Icon(Icons.more_vert),
+          ? Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                FloatingActionButton(
+                  heroTag: 'markAsRead',
+                  onPressed: _markSelectedAsRead,
+                  backgroundColor: colorScheme.primary,
+                  child: const Icon(Icons.mark_email_read),
+                ),
+                const SizedBox(width: 16),
+                FloatingActionButton(
+                  heroTag: 'delete',
+                  onPressed: _showDeleteConfirmation,
+                  backgroundColor: colorScheme.error,
+                  child: const Icon(Icons.delete),
+                ),
+              ],
             )
           : null,
+      backgroundColor: colorScheme.background,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _notifications.isEmpty
-              ? const Center(
+              ? Center(
                   child: Text(
                     'No notifications available',
-                    style: TextStyle(fontSize: 16, color: Colors.white),
+                    style: textTheme.bodyLarge,
                   ),
                 )
               : Column(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        'Inbox',
-                        style: TextStyle(
-                          fontSize: 24,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                      padding: EdgeInsets.fromLTRB(6, height + 6, 6, 6),
+                      child: Card(
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16.0),
+                          child: Text(
+                            'Notifications',
+                            style: textTheme.titleLarge,
+                          ),
                         ),
                       ),
                     ),
@@ -371,6 +365,7 @@ class _NotificationPageState extends State<NotificationPage> {
                         },
                         child: ListView.builder(
                           controller: _scrollController,
+                          padding: const EdgeInsets.only(bottom: 16),
                           itemCount: _notifications.length + (_hasMore ? 1 : 0),
                           itemBuilder: (context, index) {
                             if (index == _notifications.length) {
@@ -387,60 +382,116 @@ class _NotificationPageState extends State<NotificationPage> {
                             final notification = _notifications[index];
                             return Dismissible(
                               key: Key(notification.id.toString()),
-                              direction: DismissDirection.startToEnd,  // Only allow left swipe
+                              direction: DismissDirection.startToEnd,
                               dismissThresholds: const {
-                                DismissDirection.startToEnd: 0.25,  // Only need to swipe 25% to trigger read
+                                DismissDirection.startToEnd: 0.15,
                               },
+                              resizeDuration: const Duration(milliseconds: 150),
+                              movementDuration:
+                                  const Duration(milliseconds: 150),
+                              behavior: HitTestBehavior.opaque,
                               background: Container(
-                                color: const Color(0xFF2784BB),
+                                color: colorScheme.primary,
                                 alignment: Alignment.centerLeft,
                                 padding: const EdgeInsets.only(left: 20),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.mark_email_read,
-                                  color: Colors.white,
+                                  color: colorScheme.onPrimary,
                                 ),
                               ),
                               confirmDismiss: (direction) async {
-                                _markAsRead(notification);
-                                return false;  // Don't dismiss the notification
+                                _toggleNotificationSelection(notification);
+                                return false;
                               },
                               child: InkWell(
-                                onTap: () => _showNotificationDetails(notification),
+                                onTap: () =>
+                                    _showNotificationDetails(notification),
                                 child: Card(
-                                  margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 2),
+                                  elevation: 0,
+                                  margin: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 4),
+                                  color: _selectedNotifications
+                                          .contains(notification.id)
+                                      ? colorScheme.secondary.withOpacity(0.2)
+                                      : null,
                                   child: Padding(
                                     padding: const EdgeInsets.all(16.0),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
                                       children: [
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(
-                                              notification.user['fullName'] ?? 'System',
-                                              style: TextStyle(
-                                                fontWeight: notification.read ? FontWeight.normal : FontWeight.bold,
-                                                fontSize: 16,
-                                                color: Colors.white,
+                                        if (!notification.read &&
+                                            !_selectedNotifications
+                                                .contains(notification.id))
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                right: 12.0),
+                                            child: Container(
+                                              width: 8,
+                                              height: 8,
+                                              decoration: BoxDecoration(
+                                                color: colorScheme.primary,
+                                                shape: BoxShape.circle,
                                               ),
                                             ),
-                                            Text(
-                                              _formatDate(notification.createdAt),
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 12,
-                                                fontWeight: notification.read ? FontWeight.normal : FontWeight.bold,
-                                              ),
+                                          ),
+                                        if (_selectedNotifications
+                                            .contains(notification.id))
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                right: 12.0),
+                                            child: Icon(
+                                              Icons.check_circle,
+                                              color: colorScheme.primary,
+                                              size: 20,
                                             ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          notification.header,
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.white,
-                                            fontWeight: notification.read ? FontWeight.normal : FontWeight.bold,
+                                          ),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Text(
+                                                    notification
+                                                            .user['fullName'] ??
+                                                        'System',
+                                                    style: textTheme.bodyLarge
+                                                        ?.copyWith(
+                                                      fontWeight: notification
+                                                              .read
+                                                          ? FontWeight.normal
+                                                          : FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    _formatDate(
+                                                        notification.createdAt),
+                                                    style: textTheme.bodySmall
+                                                        ?.copyWith(
+                                                      fontWeight: notification
+                                                              .read
+                                                          ? FontWeight.normal
+                                                          : FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 8),
+                                              Text(
+                                                notification.header,
+                                                style: textTheme.bodyMedium
+                                                    ?.copyWith(
+                                                  fontWeight: notification.read
+                                                      ? FontWeight.normal
+                                                      : FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
                                       ],
@@ -461,7 +512,7 @@ class _NotificationPageState extends State<NotificationPage> {
   Future<void> _markSelectedAsRead() async {
     try {
       await Future.wait(
-        _selectedNotifications.map((id) => _notificationService.markAsRead(widget.userId, id)),
+        _selectedNotifications.map((id) => _notificationService.markAsRead(id)),
       );
       setState(() {
         _notifications = _notifications.map((n) {
@@ -478,6 +529,7 @@ class _NotificationPageState extends State<NotificationPage> {
           }
           return n;
         }).toList();
+        _selectedNotifications.clear();
       });
       _showSuccess('Notifications marked as read');
     } catch (e) {
@@ -496,4 +548,4 @@ class _NotificationPageState extends State<NotificationPage> {
       _showError('Unable to delete notification. Please try again.');
     }
   }
-} 
+}
