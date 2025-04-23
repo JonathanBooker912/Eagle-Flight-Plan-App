@@ -54,11 +54,15 @@ class ApiService {
     );
   }
 
-  Future<Map<String, dynamic>> delete(String endpoint) async {
+  Future<Map<String, dynamic>> delete(
+    String endpoint, {
+    Map<String, dynamic>? body,
+  }) async {
     return _handleResponse(
       await _client.delete(
         Uri.parse('$baseUrl$endpoint'),
         headers: await _getHeaders(),
+        body: body != null ? jsonEncode(body) : null,
       ),
     );
   }
