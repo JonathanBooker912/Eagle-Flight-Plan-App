@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import '../theme/app_theme.dart';
 
 class BarcodeScannerOverlay extends StatelessWidget {
   final Barcode? barcode;
@@ -28,7 +27,7 @@ class BarcodeScannerOverlay extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: colorScheme.surface,
+              color: colorScheme.onSurface,
               borderRadius: BorderRadius.circular(16),
             ),
             child: const Column(
@@ -72,7 +71,7 @@ class BarcodeScannerOverlay extends StatelessWidget {
                 begin: Alignment.bottomCenter,
                 end: Alignment.topCenter,
                 colors: [
-                  Colors.black.withOpacity(0.8),
+                  Colors.black.withValues(alpha: 0.8),
                   Colors.transparent,
                 ],
               ),
@@ -138,14 +137,14 @@ class BarcodeScannerOverlay extends StatelessWidget {
     }
 
     if (isLoading) {
-      return Column(
+      return const Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(
+          CircularProgressIndicator(
             color: Colors.white,
           ),
-          const SizedBox(height: 16),
-          const Text(
+          SizedBox(height: 16),
+          Text(
             'Processing check-in...',
             style: TextStyle(
               color: Colors.white,

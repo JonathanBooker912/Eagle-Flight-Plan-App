@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import '../theme/app_theme.dart';
 import '../services/service_locator.dart';
 import '../models/event.dart';
 import '../widgets/check_in_success_modal.dart';
@@ -47,7 +46,7 @@ class _EventCheckInPageState extends State<EventCheckInPage> {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.onSurface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -67,7 +66,7 @@ class _EventCheckInPageState extends State<EventCheckInPage> {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.onSurface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),

@@ -206,95 +206,93 @@ class _EventDetailsModalState extends State<EventDetailsModal> {
                 ),
                 const SizedBox(height: 8),
                 ...widget.event.fulfillableItems
-                    .map((item) => Card(
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15)),
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 6),
-                          color: colorScheme.surface,
-                          child: Container(
-                            child: IntrinsicHeight(
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  Padding(
-                                    padding:
-                                        const EdgeInsets.fromLTRB(8, 8, 0, 8),
-                                    child: Container(
-                                      width: 12,
-                                      decoration: BoxDecoration(
-                                        color: item.status.toLowerCase() ==
-                                                'complete'
+                    .map(
+                      (item) => Card(
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15)),
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 6),
+                        color: colorScheme.onSurface,
+                        child: IntrinsicHeight(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(8, 8, 0, 8),
+                                child: Container(
+                                  width: 12,
+                                  decoration: BoxDecoration(
+                                    color:
+                                        item.status.toLowerCase() == 'complete'
                                             ? colorScheme.primary
                                             : item.status.toLowerCase() ==
                                                     'incomplete'
                                                 ? colorScheme.error
                                                 : colorScheme.tertiary,
-                                        borderRadius: const BorderRadius.only(
-                                          topLeft: Radius.circular(9),
-                                          bottomLeft: Radius.circular(9),
-                                        ),
-                                      ),
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(9),
+                                      bottomLeft: Radius.circular(9),
                                     ),
                                   ),
-                                  Expanded(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(16),
-                                      child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              mainAxisSize: MainAxisSize.min,
+                                ),
+                              ),
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
                                               children: [
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    Text(
-                                                      item.name,
-                                                      style: const TextStyle(
-                                                        fontSize: 18,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: Colors.white,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 8),
                                                 Text(
-                                                  item.experience!.description,
+                                                  item.name,
                                                   style: const TextStyle(
-                                                    color: Colors.white70,
-                                                    fontSize: 14,
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.white,
                                                   ),
                                                 ),
                                               ],
                                             ),
-                                          ),
-                                          const SizedBox(width: 16),
-                                          Text(
-                                            '${item.experience?.points ?? 0} pts',
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 14,
+                                            const SizedBox(height: 8),
+                                            Text(
+                                              item.experience!.description,
+                                              style: const TextStyle(
+                                                color: Colors.white70,
+                                                fontSize: 14,
+                                              ),
                                             ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
-                                    ),
+                                      const SizedBox(width: 16),
+                                      Text(
+                                        '${item.experience?.points ?? 0} pts',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
+                                ),
                               ),
-                            ),
+                            ],
                           ),
-                        ))
+                        ),
+                      ),
+                    )
                     .toList(),
               ],
             ],

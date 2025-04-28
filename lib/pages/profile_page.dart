@@ -4,7 +4,6 @@ import '../theme/app_theme.dart';
 import '../models/strength.dart';
 import '../models/link.dart';
 import '../services/strength_service.dart';
-import '../services/link_service.dart';
 import '../services/user_service.dart';
 import '../services/badge_service.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -123,14 +122,13 @@ class _ProfilePageState extends State<ProfilePage> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isMobile = constraints.maxWidth < 600;
-        final isTablet = constraints.maxWidth < 960;
 
         return Scaffold(
           floatingActionButton: FloatingActionButton(
             onPressed: () => _logout(),
             child: const Icon(Icons.logout),
           ),
-          backgroundColor: colorScheme.background,
+          backgroundColor: colorScheme.surface,
           body: SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -138,7 +136,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: [
                   // Profile and About Me Section
                   Card(
-                    color: colorScheme.surface,
+                    elevation: 0,
+                    color: colorScheme.onSurface,
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: isMobile
@@ -168,7 +167,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
                   // Links Section
                   Card(
-                    color: colorScheme.surface,
+                    elevation: 0,
+                    color: colorScheme.onSurface,
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: _buildLinksSection(),
@@ -263,7 +263,7 @@ class _ProfilePageState extends State<ProfilePage> {
           // padding: const EdgeInsets.all(12),
           width: double.infinity,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Padding(
@@ -325,25 +325,17 @@ class _ProfilePageState extends State<ProfilePage> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            Text(
-                              link.websiteName,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            GestureDetector(
-                              onTap: () => _launchUrl(link.link),
+                            TextButton(
+                              onPressed: () => _launchUrl(link.link),
                               child: Text(
-                                link.link,
+                                link.websiteName,
                                 style: const TextStyle(
-                                  color: Colors.blue,
-                                  decoration: TextDecoration.underline,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.white,
                                 ),
                               ),
-                            ),
+                            )
                           ],
                         ),
                       ))
@@ -357,7 +349,8 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildBadgesSection() {
     final colorScheme = Theme.of(context).colorScheme;
     return Card(
-      color: colorScheme.surface,
+      elevation: 0,
+      color: colorScheme.onSurface,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -390,7 +383,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 3,
                       childAspectRatio: 1,
                       crossAxisSpacing: 8,
@@ -477,7 +471,8 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildStrengthsSection() {
     final colorScheme = Theme.of(context).colorScheme;
     return Card(
-      color: colorScheme.surface,
+      elevation: 0,
+      color: colorScheme.onSurface,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

@@ -51,7 +51,7 @@ class _MyAppState extends State<MyApp> {
       initialRoute: widget.initialRoute,
       routes: {
         '/login': (context) => const LoginPage(),
-        '/home': (context) => AppScaffold(
+        '/home': (context) => const AppScaffold(
               title: 'Eagle Flight Plan',
               body: FlightPlanPage(),
               currentRoute: '/home',

@@ -5,10 +5,9 @@ class FlightPlanItem {
   final int id;
   final String flightPlanItemType;
   final String status;
-  final DateTime dueDate;
   final String name;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
   final int flightPlanId;
   final int? taskId;
   final int? eventId;
@@ -21,10 +20,9 @@ class FlightPlanItem {
     required this.id,
     required this.flightPlanItemType,
     required this.status,
-    required this.dueDate,
     required this.name,
-    required this.createdAt,
-    required this.updatedAt,
+    this.createdAt,
+    this.updatedAt,
     required this.flightPlanId,
     this.taskId,
     this.eventId,
@@ -39,19 +37,21 @@ class FlightPlanItem {
       id: json['id'] as int,
       flightPlanItemType: json['flightPlanItemType'] as String,
       status: json['status'] as String,
-      dueDate: DateTime.parse(json['dueDate'] as String),
       name: json['name'] as String,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'] as String)
+          : null,
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'] as String)
+          : null,
       flightPlanId: json['flightPlanId'] as int,
       taskId: json['taskId'] as int?,
       eventId: json['eventId'] as int?,
       experienceId: json['experienceId'] as int?,
       task: json['task'] != null ? Task.fromJson(json['task']) : null,
-      experience:
-          json['experience'] != null
-              ? Experience.fromJson(json['experience'])
-              : null,
+      experience: json['experience'] != null
+          ? Experience.fromJson(json['experience'])
+          : null,
       event: json['event'],
     );
   }

@@ -52,7 +52,7 @@ class CheckInSuccessModal extends StatelessWidget {
                           borderRadius: BorderRadius.circular(15)),
                       margin: const EdgeInsets.symmetric(
                           horizontal: 6, vertical: 6),
-                      color: colorScheme.surface,
+                      color: colorScheme.onSurface,
                       child: IntrinsicHeight(
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -61,9 +61,9 @@ class CheckInSuccessModal extends StatelessWidget {
                               padding: const EdgeInsets.fromLTRB(8, 8, 0, 8),
                               child: Container(
                                 width: 12,
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
                                   color: AppTheme.primaryColor,
-                                  borderRadius: const BorderRadius.only(
+                                  borderRadius: BorderRadius.only(
                                     topLeft: Radius.circular(9),
                                     bottomLeft: Radius.circular(9),
                                   ),

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:table_calendar/table_calendar.dart';
-import '../theme/app_theme.dart';
 
 class CalendarHeader extends StatelessWidget {
   final DateTime date;
@@ -21,7 +19,7 @@ class CalendarHeader extends StatelessWidget {
 
     return Card(
       elevation: 0,
-      color: colorScheme.surface,
+      color: colorScheme.onSurface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15),
       ),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/event.dart';
-import '../theme/app_theme.dart';
 
 class EventCard extends StatelessWidget {
   final Event event;
@@ -29,7 +28,7 @@ class EventCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(15),
       ),
       margin: const EdgeInsets.symmetric(vertical: 6),
-      color: colorScheme.surface,
+      color: colorScheme.onSurface,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(15),

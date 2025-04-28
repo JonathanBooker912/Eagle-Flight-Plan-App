@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/flight_plan_item.dart';
-import '../theme/app_theme.dart';
 
 class FlightPlanItemCard extends StatelessWidget {
   final FlightPlanItem item;
@@ -14,15 +13,14 @@ class FlightPlanItemCard extends StatelessWidget {
         return colorScheme.primary;
       case 'incomplete':
         return colorScheme.error;
+      case 'registered':
       case 'pending':
-        return colorScheme.secondary;
+        return colorScheme.tertiary;
+      case 'rejected':
+        return colorScheme.error;
       default:
         return colorScheme.primary;
     }
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.month}/${date.day}/${date.year}';
   }
 
   void _showDetailsModal(BuildContext context) {
@@ -31,7 +29,7 @@ class FlightPlanItemCard extends StatelessWidget {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: colorScheme.surface,
+      backgroundColor: colorScheme.onSurface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -44,9 +42,14 @@ class FlightPlanItemCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  item.name,
-                  style: textTheme.titleLarge,
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    item.name,
+                    style: textTheme.titleLarge,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -72,26 +75,26 @@ class FlightPlanItemCard extends StatelessWidget {
               'Type: ${item.flightPlanItemType}',
               style: textTheme.bodyLarge,
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Due Date: ${_formatDate(item.dueDate)}',
-              style: textTheme.bodyLarge,
-            ),
+            // const SizedBox(height: 8),
+            // Text(
+            //   'Due Date: ${_formatDate(item.dueDate)}',
+            //   style: textTheme.bodyLarge,
+            // ),
             const SizedBox(height: 8),
             Text(
               'Points: ${item.task?.points ?? item.experience?.points ?? 0}',
               style: textTheme.bodyLarge,
             ),
             const SizedBox(height: 8),
-            Text(
-              'Created: ${_formatDate(item.createdAt)}',
-              style: textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Last Updated: ${_formatDate(item.updatedAt)}',
-              style: textTheme.bodyLarge,
-            ),
+            // Text(
+            //   'Created: ${_formatDate(item.createdAt)}',
+            //   style: textTheme.bodyLarge,
+            // ),
+            // const SizedBox(height: 8),
+            // Text(
+            //   'Last Updated: ${_formatDate(item.updatedAt)}',
+            //   style: textTheme.bodyLarge,
+            // ),
             const SizedBox(height: 20),
           ],
         ),
@@ -110,7 +113,7 @@ class FlightPlanItemCard extends StatelessWidget {
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-        color: colorScheme.surface,
+        color: colorScheme.onSurface,
         child: IntrinsicHeight(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -142,9 +145,13 @@ class FlightPlanItemCard extends StatelessWidget {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  item.name,
-                                  style: textTheme.titleMedium,
+                                Expanded(
+                                  child: Text(
+                                    item.name,
+                                    style: textTheme.titleMedium,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 2,
+                                  ),
                                 ),
                               ],
                             ),

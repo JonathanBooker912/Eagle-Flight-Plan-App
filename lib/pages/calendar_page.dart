@@ -2,14 +2,10 @@ import 'package:eagle_flight_plan/services/service_locator.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../models/event.dart';
-import '../services/event_service.dart';
-import '../theme/app_theme.dart';
 import '../services/api_session_storage.dart';
-import '../widgets/event_card.dart';
 import '../widgets/event_list.dart';
 import '../widgets/calendar_header.dart';
 import '../widgets/calendar_loader.dart';
-import '../widgets/shimmer.dart';
 import '../widgets/event_details_modal.dart';
 
 class CalendarPage extends StatefulWidget {
@@ -18,12 +14,12 @@ class CalendarPage extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _CalendarPageState createState() => _CalendarPageState();
+  CalendarPageState createState() => CalendarPageState();
 }
 
-class _CalendarPageState extends State<CalendarPage> {
+class CalendarPageState extends State<CalendarPage> {
   late int _userId;
-  late ServiceLocator _serviceLocator = ServiceLocator();
+  final ServiceLocator _serviceLocator = ServiceLocator();
   List<Event> _events = [];
   Set<int> _registeredEventIds = {};
   bool _isLoading = true;
@@ -48,19 +44,15 @@ class _CalendarPageState extends State<CalendarPage> {
   Future<void> _initializeData() async {
     if (_isDisposed) return;
     _userId = (await ApiSessionStorage.getSession()).userId;
-    print('CalendarPage initState - userId: ${_userId}');
+
     _checkSession();
   }
 
   Future<void> _checkSession() async {
     if (_isDisposed) return;
     try {
-      final session = await ApiSessionStorage.getSession();
-      print('Current session: ${session.toJsonString()}');
-      print('Using userId: ${_userId}');
       _loadEvents();
     } catch (e) {
-      print('Error checking session: $e');
       if (!_isDisposed) {
         setState(() {
           _isLoading = false;
@@ -72,19 +64,17 @@ class _CalendarPageState extends State<CalendarPage> {
 
   Future<void> _loadEvents() async {
     if (_isDisposed) return;
-    print('Loading events for user: ${_userId}');
+
     try {
       // Get all available events
       final allEventsResponse =
           await _serviceLocator.event.getEventsForUser(_userId);
       if (_isDisposed) return;
-      print('Received all events: ${allEventsResponse.events.length} events');
 
       // Get registered events
       final registeredEvents =
           await _serviceLocator.event.getRegisteredEvents(_userId, 0);
       if (_isDisposed) return;
-      print('Received registered events: ${registeredEvents.length} events');
 
       if (!_isDisposed) {
         setState(() {
@@ -94,9 +84,7 @@ class _CalendarPageState extends State<CalendarPage> {
           _isLoading = false;
         });
       }
-      print('Events grouped by date: ${_eventsByDate.length} dates');
     } catch (e) {
-      print('Error loading events: $e');
       if (!_isDisposed) {
         setState(() {
           _isLoading = false;
@@ -107,7 +95,6 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   Map<DateTime, List<Event>> _groupEventsByDate(List<Event> events) {
-    print('Grouping ${events.length} events by date');
     final Map<DateTime, List<Event>> eventsByDate = {};
     for (var event in events) {
       // Convert UTC to CST (GMT-6)
@@ -117,7 +104,6 @@ class _CalendarPageState extends State<CalendarPage> {
         eventsByDate[date] = [];
       }
       eventsByDate[date]!.add(event);
-      print('Event added: ${event.name} on ${date.toString()}');
     }
     return eventsByDate;
   }
@@ -130,7 +116,6 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   void _showError(String message) {
-    print('Showing error: $message');
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -145,7 +130,6 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   void _showEventDetails(Event event) {
-    print('Showing details for event: ${event.name}');
     final colorScheme = Theme.of(context).colorScheme;
 
     showModalBottomSheet(
@@ -155,7 +139,7 @@ class _CalendarPageState extends State<CalendarPage> {
       builder: (context) => Container(
         height: MediaQuery.of(context).size.height * 0.7,
         decoration: BoxDecoration(
-          color: colorScheme.surface,
+          color: colorScheme.onSurface,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
         ),
         child: EventDetailsModal(
@@ -176,7 +160,7 @@ class _CalendarPageState extends State<CalendarPage> {
 
   Future<void> _registerForEvent(Event event) async {
     if (_isDisposed) return;
-    print('Registering for event: ${event.name}');
+
     try {
       await _serviceLocator.event.registerForEvent(_userId, event.id);
       if (_isDisposed) return;
@@ -189,12 +173,11 @@ class _CalendarPageState extends State<CalendarPage> {
           _eventsByDate = _groupEventsByDate(_events);
         });
       }
-      print('Successfully registered for event');
+
       if (!_isDisposed) {
         Navigator.pop(context);
       }
     } catch (e) {
-      print('Error registering for event: $e');
       if (!_isDisposed) {
         _showError('Unable to register for event. Please try again.');
       }
@@ -203,7 +186,7 @@ class _CalendarPageState extends State<CalendarPage> {
 
   Future<void> _unregisterFromEvent(Event event) async {
     if (_isDisposed) return;
-    print('Unregistering from event: ${event.name}');
+
     try {
       await _serviceLocator.event.unregisterFromEvent(event.id);
       if (_isDisposed) return;
@@ -216,12 +199,11 @@ class _CalendarPageState extends State<CalendarPage> {
           _eventsByDate = _groupEventsByDate(_events);
         });
       }
-      print('Successfully unregistered from event');
+
       if (!_isDisposed) {
         Navigator.pop(context);
       }
     } catch (e) {
-      print('Error unregistering from event: $e');
       if (!_isDisposed) {
         _showError('Unable to unregister from event. Please try again.');
       }
@@ -234,7 +216,7 @@ class _CalendarPageState extends State<CalendarPage> {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: _isLoading
           ? Padding(
               padding:
@@ -246,7 +228,7 @@ class _CalendarPageState extends State<CalendarPage> {
                   const SizedBox(height: 16),
                   Card(
                     elevation: 0,
-                    color: colorScheme.surface,
+                    color: colorScheme.onSurface,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
                     ),
@@ -259,7 +241,8 @@ class _CalendarPageState extends State<CalendarPage> {
                             width: 80,
                             height: 24,
                             decoration: BoxDecoration(
-                              color: colorScheme.background.withOpacity(0.5),
+                              color:
+                                  colorScheme.onSurface.withValues(alpha: 0.5),
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
@@ -277,7 +260,7 @@ class _CalendarPageState extends State<CalendarPage> {
                             borderRadius: BorderRadius.circular(15),
                           ),
                           margin: const EdgeInsets.symmetric(vertical: 6),
-                          color: colorScheme.surface,
+                          color: colorScheme.onSurface,
                           child: Padding(
                             padding: const EdgeInsets.all(16),
                             child: Row(
@@ -286,8 +269,8 @@ class _CalendarPageState extends State<CalendarPage> {
                                   width: 12,
                                   height: 40,
                                   decoration: BoxDecoration(
-                                    color:
-                                        colorScheme.background.withOpacity(0.5),
+                                    color: colorScheme.onSurface
+                                        .withValues(alpha: 0.5),
                                     borderRadius: const BorderRadius.only(
                                       topLeft: Radius.circular(9),
                                       bottomLeft: Radius.circular(9),
@@ -304,8 +287,8 @@ class _CalendarPageState extends State<CalendarPage> {
                                         width: 120,
                                         height: 20,
                                         decoration: BoxDecoration(
-                                          color: colorScheme.background
-                                              .withOpacity(0.5),
+                                          color: colorScheme.onSurface
+                                              .withValues(alpha: 0.5),
                                           borderRadius:
                                               BorderRadius.circular(8),
                                         ),
@@ -315,8 +298,8 @@ class _CalendarPageState extends State<CalendarPage> {
                                         width: 80,
                                         height: 16,
                                         decoration: BoxDecoration(
-                                          color: colorScheme.background
-                                              .withOpacity(0.5),
+                                          color: colorScheme.onSurface
+                                              .withValues(alpha: 0.5),
                                           borderRadius:
                                               BorderRadius.circular(8),
                                         ),
@@ -329,8 +312,8 @@ class _CalendarPageState extends State<CalendarPage> {
                                   width: 60,
                                   height: 20,
                                   decoration: BoxDecoration(
-                                    color:
-                                        colorScheme.background.withOpacity(0.5),
+                                    color: colorScheme.onSurface
+                                        .withValues(alpha: 0.5),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                 ),
@@ -352,7 +335,7 @@ class _CalendarPageState extends State<CalendarPage> {
                   const SizedBox(height: 16),
                   Card(
                     elevation: 0,
-                    color: colorScheme.surface,
+                    color: colorScheme.onSurface,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
                     ),
@@ -367,21 +350,13 @@ class _CalendarPageState extends State<CalendarPage> {
                       startingDayOfWeek: StartingDayOfWeek.sunday,
                       daysOfWeekHeight: 32,
                       daysOfWeekStyle: DaysOfWeekStyle(
-                        weekdayStyle: textTheme.bodyMedium!.copyWith(
-                          color: colorScheme.onSurface,
-                        ),
-                        weekendStyle: textTheme.bodyMedium!.copyWith(
-                          color: colorScheme.onSurface,
-                        ),
+                        weekdayStyle: textTheme.bodyMedium!.copyWith(),
+                        weekendStyle: textTheme.bodyMedium!.copyWith(),
                       ),
                       calendarStyle: CalendarStyle(
                         outsideDaysVisible: false,
-                        weekendTextStyle: textTheme.bodyLarge!.copyWith(
-                          color: colorScheme.onSurface,
-                        ),
-                        defaultTextStyle: textTheme.bodyLarge!.copyWith(
-                          color: colorScheme.onSurface,
-                        ),
+                        weekendTextStyle: textTheme.bodyLarge!.copyWith(),
+                        defaultTextStyle: textTheme.bodyLarge!.copyWith(),
                         selectedDecoration: BoxDecoration(
                           color: colorScheme.primary,
                           shape: BoxShape.circle,
@@ -405,14 +380,13 @@ class _CalendarPageState extends State<CalendarPage> {
                         titleTextStyle: textTheme.titleLarge!,
                         leftChevronIcon: Icon(
                           Icons.chevron_left,
-                          color: colorScheme.onSurface,
+                          color: colorScheme.secondary,
                         ),
                         rightChevronIcon: Icon(
                           Icons.chevron_right,
-                          color: colorScheme.onSurface,
+                          color: colorScheme.secondary,
                         ),
                         titleTextFormatter: (date, locale) {
-                          final eventCount = _getEventCountForMonth(date);
                           return '${date.year} ${_getMonthName(date.month)}';
                         },
                         leftChevronMargin: const EdgeInsets.only(left: 8),

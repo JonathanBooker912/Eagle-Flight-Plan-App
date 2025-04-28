@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../services/service_locator.dart';
-import '../theme/app_theme.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -54,7 +53,6 @@ class _LoginPageState extends State<LoginPage> {
         Navigator.pushReplacementNamed(context, '/home');
       }
     } catch (e) {
-      print('Error signing in with Google: $e');
       if (mounted) {
         final colorScheme = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -79,7 +77,7 @@ class _LoginPageState extends State<LoginPage> {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.onSurface,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 32, 16, 32),
@@ -90,7 +88,7 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   Expanded(
                     child: Card(
-                      color: colorScheme.surface,
+                      color: colorScheme.onSurface,
                       elevation: 0,
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
@@ -107,10 +105,10 @@ class _LoginPageState extends State<LoginPage> {
                               style: textTheme.displayLarge,
                               textAlign: TextAlign.left,
                             ),
-                            Align(
+                            const Align(
                               alignment: Alignment.bottomRight,
                               child: Image(
-                                image: const AssetImage('assets/Birb.png'),
+                                image: AssetImage('assets/Birb.png'),
                                 width: 225,
                                 height: 225,
                               ),
@@ -124,7 +122,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 16),
               Card(
-                color: colorScheme.surface,
+                color: colorScheme.onSurface,
                 elevation: 0,
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
 
 class CalendarLoader extends StatefulWidget {
   const CalendarLoader({Key? key}) : super(key: key);
@@ -36,14 +35,13 @@ class _CalendarLoaderState extends State<CalendarLoader>
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
 
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, child) {
         return Card(
           elevation: 0,
-          color: colorScheme.surface,
+          color: colorScheme.onSurface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
@@ -58,8 +56,8 @@ class _CalendarLoaderState extends State<CalendarLoader>
                       width: 120,
                       height: 24,
                       decoration: BoxDecoration(
-                        color: colorScheme.background
-                            .withOpacity(_animation.value),
+                        color: colorScheme.onSurface
+                            .withValues(alpha: _animation.value),
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
@@ -67,8 +65,8 @@ class _CalendarLoaderState extends State<CalendarLoader>
                       width: 80,
                       height: 24,
                       decoration: BoxDecoration(
-                        color: colorScheme.background
-                            .withOpacity(_animation.value),
+                        color: colorScheme.onSurface
+                            .withValues(alpha: _animation.value),
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
@@ -87,8 +85,8 @@ class _CalendarLoaderState extends State<CalendarLoader>
                   itemBuilder: (context, index) {
                     return Container(
                       decoration: BoxDecoration(
-                        color: colorScheme.background
-                            .withOpacity(_animation.value),
+                        color: colorScheme.onSurface
+                            .withValues(alpha: _animation.value),
                         borderRadius: BorderRadius.circular(8),
                       ),
                     );

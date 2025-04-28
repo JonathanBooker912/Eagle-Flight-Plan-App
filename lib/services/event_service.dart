@@ -1,6 +1,5 @@
 import 'api_service.dart';
 import '../models/event.dart';
-import '../models/flight_plan_item.dart';
 import '../services/api_session_storage.dart';
 
 class EventResponse {
@@ -19,47 +18,31 @@ class EventService extends ApiService {
   Future<EventResponse> getEventsForUser(int userId,
       {int page = 1, int pageSize = 1000}) async {
     try {
-      print('Making API call to get events');
       final response = await get(
         '/event?page=$page&pageSize=$pageSize',
       );
 
-      print('Raw API response: $response');
-
-      if (response == null) {
-        print('API response is null');
-        return EventResponse(events: [], totalPages: 0);
-      }
-
       final List<dynamic> eventsJson = response['events'] ?? [];
-      final total = eventsJson.length;
-      final totalPages = 1; // Since we're getting all events at once
-
-      print(
-          'Parsed events: ${eventsJson.length}, total: $total, totalPages: $totalPages');
+      const totalPages = 1; // Since we're getting all events at once
 
       return EventResponse(
         events: eventsJson.map((json) => Event.fromJson(json)).toList(),
         totalPages: totalPages,
       );
     } catch (e) {
-      print('Error in getEventsForUser: $e');
       return EventResponse(events: [], totalPages: 0);
     }
   }
 
   Future<void> registerForEvent(int userId, int eventId) async {
     try {
-      print('Registering user $userId for event $eventId');
       await post(
         '/event/$eventId/register',
         {
           'studentIds': [userId]
         },
       );
-      print('Registration successful');
     } catch (e) {
-      print('Error registering for event: $e');
       rethrow;
     }
   }
@@ -67,16 +50,13 @@ class EventService extends ApiService {
   Future<void> unregisterFromEvent(int eventId) async {
     final studentId = (await ApiSessionStorage.getSession()).studentId;
     try {
-      print('Unregistering student $studentId from event $eventId');
       await delete(
         '/event/$eventId/unregister',
         body: {
           'studentIds': [studentId.toString()]
         },
       );
-      print('Unregistration successful');
     } catch (e) {
-      print('Error unregistering from event: $e');
       rethrow;
     }
   }
@@ -97,13 +77,11 @@ class EventService extends ApiService {
     try {
       final flightPlanItems = await get(
           '/event/${eventData.id}/fulfillableFlightPlanItems/$studentId');
-      print(flightPlanItems);
       eventData.setFulfillableItemsFromJson(
           flightPlanItems['fulfillableFlightPlanItems'] as List);
     } catch (e) {
-      print(e);
+      rethrow;
     }
-    print(eventData.fulfillableItems);
     return eventData;
   }
 
