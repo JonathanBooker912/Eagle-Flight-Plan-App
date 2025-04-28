@@ -28,7 +28,7 @@ class EventCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(15),
       ),
       margin: const EdgeInsets.symmetric(vertical: 6),
-      color: colorScheme.surface,
+      color: colorScheme.onSurface,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(15),

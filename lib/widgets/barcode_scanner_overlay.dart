@@ -27,7 +27,7 @@ class BarcodeScannerOverlay extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: colorScheme.surface,
+              color: colorScheme.onSurface,
               borderRadius: BorderRadius.circular(16),
             ),
             child: const Column(

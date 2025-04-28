@@ -112,7 +112,7 @@ class _FlightPlanPageState extends State<FlightPlanPage> {
           Padding(
             padding: EdgeInsets.fromLTRB(6, height + 4, 6, 6),
             child: Card(
-              color: colorScheme.surface,
+              color: colorScheme.onSurface,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15),
@@ -142,7 +142,7 @@ class _FlightPlanPageState extends State<FlightPlanPage> {
                                   'Select Semester',
                                   style: textTheme.bodyMedium,
                                 ),
-                                dropdownColor: colorScheme.surface,
+                                dropdownColor: colorScheme.onSurface,
                                 style: textTheme.bodyMedium,
                                 underline: Container(
                                   height: 0,
@@ -183,7 +183,7 @@ class _FlightPlanPageState extends State<FlightPlanPage> {
                         Expanded(
                           child: LinearProgressIndicator(
                             value: _completionPercentage,
-                            backgroundColor: colorScheme.surface,
+                            backgroundColor: colorScheme.onSurface,
                             borderRadius: BorderRadius.circular(10),
                             valueColor: AlwaysStoppedAnimation<Color>(
                               colorScheme.primary,

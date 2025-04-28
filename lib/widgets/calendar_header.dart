@@ -19,7 +19,7 @@ class CalendarHeader extends StatelessWidget {
 
     return Card(
       elevation: 0,
-      color: colorScheme.surface,
+      color: colorScheme.onSurface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15),
       ),

@@ -136,7 +136,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: [
                   // Profile and About Me Section
                   Card(
-                    color: colorScheme.surface,
+                    elevation: 0,
+                    color: colorScheme.onSurface,
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: isMobile
@@ -166,7 +167,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
                   // Links Section
                   Card(
-                    color: colorScheme.surface,
+                    elevation: 0,
+                    color: colorScheme.onSurface,
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: _buildLinksSection(),
@@ -347,7 +349,8 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildBadgesSection() {
     final colorScheme = Theme.of(context).colorScheme;
     return Card(
-      color: colorScheme.surface,
+      elevation: 0,
+      color: colorScheme.onSurface,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -468,7 +471,8 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildStrengthsSection() {
     final colorScheme = Theme.of(context).colorScheme;
     return Card(
-      color: colorScheme.surface,
+      elevation: 0,
+      color: colorScheme.onSurface,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

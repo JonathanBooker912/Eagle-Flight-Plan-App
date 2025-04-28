@@ -54,7 +54,7 @@ class NavigationBar extends StatelessWidget {
   const NavigationBar({super.key, required this.currentRoute});
 
   Color _getIconColor(String route, ColorScheme colorScheme) {
-    return currentRoute == route ? colorScheme.primary : colorScheme.surface;
+    return currentRoute == route ? colorScheme.primary : colorScheme.onSurface;
   }
 
   void _navigateTo(BuildContext context, String route) {

@@ -29,7 +29,7 @@ class FlightPlanItemCard extends StatelessWidget {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: colorScheme.surface,
+      backgroundColor: colorScheme.onSurface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -113,7 +113,7 @@ class FlightPlanItemCard extends StatelessWidget {
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-        color: colorScheme.surface,
+        color: colorScheme.onSurface,
         child: IntrinsicHeight(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,

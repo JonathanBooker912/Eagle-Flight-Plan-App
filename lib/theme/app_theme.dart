@@ -77,10 +77,12 @@ class AppTheme {
       useMaterial3: true,
       brightness: Brightness.dark,
       colorScheme: const ColorScheme.dark(
+        surface: darkBackgroundColor,
         primary: primaryColor,
         secondary: secondaryColor,
         tertiary: accentColor,
-        surface: darkSurfaceColor,
+        onSurface: darkBackgroundDarken,
+        inverseSurface: secondaryColor,
         error: darkErrorColor,
       ),
       textTheme: const TextTheme(

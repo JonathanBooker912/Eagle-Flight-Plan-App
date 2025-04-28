@@ -41,7 +41,7 @@ class _CalendarLoaderState extends State<CalendarLoader>
       builder: (context, child) {
         return Card(
           elevation: 0,
-          color: colorScheme.surface,
+          color: colorScheme.onSurface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
@@ -56,7 +56,7 @@ class _CalendarLoaderState extends State<CalendarLoader>
                       width: 120,
                       height: 24,
                       decoration: BoxDecoration(
-                        color: colorScheme.surface
+                        color: colorScheme.onSurface
                             .withValues(alpha: _animation.value),
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -65,7 +65,7 @@ class _CalendarLoaderState extends State<CalendarLoader>
                       width: 80,
                       height: 24,
                       decoration: BoxDecoration(
-                        color: colorScheme.surface
+                        color: colorScheme.onSurface
                             .withValues(alpha: _animation.value),
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -85,7 +85,7 @@ class _CalendarLoaderState extends State<CalendarLoader>
                   itemBuilder: (context, index) {
                     return Container(
                       decoration: BoxDecoration(
-                        color: colorScheme.surface
+                        color: colorScheme.onSurface
                             .withValues(alpha: _animation.value),
                         borderRadius: BorderRadius.circular(8),
                       ),

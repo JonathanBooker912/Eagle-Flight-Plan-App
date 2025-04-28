@@ -139,7 +139,7 @@ class CalendarPageState extends State<CalendarPage> {
       builder: (context) => Container(
         height: MediaQuery.of(context).size.height * 0.7,
         decoration: BoxDecoration(
-          color: colorScheme.surface,
+          color: colorScheme.onSurface,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
         ),
         child: EventDetailsModal(
@@ -228,7 +228,7 @@ class CalendarPageState extends State<CalendarPage> {
                   const SizedBox(height: 16),
                   Card(
                     elevation: 0,
-                    color: colorScheme.surface,
+                    color: colorScheme.onSurface,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
                     ),
@@ -241,7 +241,8 @@ class CalendarPageState extends State<CalendarPage> {
                             width: 80,
                             height: 24,
                             decoration: BoxDecoration(
-                              color: colorScheme.surface.withValues(alpha: 0.5),
+                              color:
+                                  colorScheme.onSurface.withValues(alpha: 0.5),
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
@@ -259,7 +260,7 @@ class CalendarPageState extends State<CalendarPage> {
                             borderRadius: BorderRadius.circular(15),
                           ),
                           margin: const EdgeInsets.symmetric(vertical: 6),
-                          color: colorScheme.surface,
+                          color: colorScheme.onSurface,
                           child: Padding(
                             padding: const EdgeInsets.all(16),
                             child: Row(
@@ -268,7 +269,7 @@ class CalendarPageState extends State<CalendarPage> {
                                   width: 12,
                                   height: 40,
                                   decoration: BoxDecoration(
-                                    color: colorScheme.surface
+                                    color: colorScheme.onSurface
                                         .withValues(alpha: 0.5),
                                     borderRadius: const BorderRadius.only(
                                       topLeft: Radius.circular(9),
@@ -286,7 +287,7 @@ class CalendarPageState extends State<CalendarPage> {
                                         width: 120,
                                         height: 20,
                                         decoration: BoxDecoration(
-                                          color: colorScheme.surface
+                                          color: colorScheme.onSurface
                                               .withValues(alpha: 0.5),
                                           borderRadius:
                                               BorderRadius.circular(8),
@@ -297,7 +298,7 @@ class CalendarPageState extends State<CalendarPage> {
                                         width: 80,
                                         height: 16,
                                         decoration: BoxDecoration(
-                                          color: colorScheme.surface
+                                          color: colorScheme.onSurface
                                               .withValues(alpha: 0.5),
                                           borderRadius:
                                               BorderRadius.circular(8),
@@ -311,7 +312,7 @@ class CalendarPageState extends State<CalendarPage> {
                                   width: 60,
                                   height: 20,
                                   decoration: BoxDecoration(
-                                    color: colorScheme.surface
+                                    color: colorScheme.onSurface
                                         .withValues(alpha: 0.5),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
@@ -334,7 +335,7 @@ class CalendarPageState extends State<CalendarPage> {
                   const SizedBox(height: 16),
                   Card(
                     elevation: 0,
-                    color: colorScheme.surface,
+                    color: colorScheme.onSurface,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
                     ),
@@ -349,21 +350,13 @@ class CalendarPageState extends State<CalendarPage> {
                       startingDayOfWeek: StartingDayOfWeek.sunday,
                       daysOfWeekHeight: 32,
                       daysOfWeekStyle: DaysOfWeekStyle(
-                        weekdayStyle: textTheme.bodyMedium!.copyWith(
-                          color: colorScheme.onSurface,
-                        ),
-                        weekendStyle: textTheme.bodyMedium!.copyWith(
-                          color: colorScheme.onSurface,
-                        ),
+                        weekdayStyle: textTheme.bodyMedium!.copyWith(),
+                        weekendStyle: textTheme.bodyMedium!.copyWith(),
                       ),
                       calendarStyle: CalendarStyle(
                         outsideDaysVisible: false,
-                        weekendTextStyle: textTheme.bodyLarge!.copyWith(
-                          color: colorScheme.onSurface,
-                        ),
-                        defaultTextStyle: textTheme.bodyLarge!.copyWith(
-                          color: colorScheme.onSurface,
-                        ),
+                        weekendTextStyle: textTheme.bodyLarge!.copyWith(),
+                        defaultTextStyle: textTheme.bodyLarge!.copyWith(),
                         selectedDecoration: BoxDecoration(
                           color: colorScheme.primary,
                           shape: BoxShape.circle,
@@ -387,11 +380,11 @@ class CalendarPageState extends State<CalendarPage> {
                         titleTextStyle: textTheme.titleLarge!,
                         leftChevronIcon: Icon(
                           Icons.chevron_left,
-                          color: colorScheme.onSurface,
+                          color: colorScheme.secondary,
                         ),
                         rightChevronIcon: Icon(
                           Icons.chevron_right,
-                          color: colorScheme.onSurface,
+                          color: colorScheme.secondary,
                         ),
                         titleTextFormatter: (date, locale) {
                           return '${date.year} ${_getMonthName(date.month)}';

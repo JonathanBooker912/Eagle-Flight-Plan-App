@@ -77,7 +77,7 @@ class _LoginPageState extends State<LoginPage> {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: colorScheme.onSurface,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 32, 16, 32),
@@ -88,7 +88,7 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   Expanded(
                     child: Card(
-                      color: colorScheme.surface,
+                      color: colorScheme.onSurface,
                       elevation: 0,
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
@@ -122,7 +122,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 16),
               Card(
-                color: colorScheme.surface,
+                color: colorScheme.onSurface,
                 elevation: 0,
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),

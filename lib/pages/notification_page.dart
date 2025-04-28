@@ -218,7 +218,7 @@ class NotificationPageState extends State<NotificationPage> {
       builder: (context) => Container(
         height: MediaQuery.of(context).size.height * 0.7,
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
+          color: Theme.of(context).colorScheme.onSurface,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
         ),
         child: Column(
