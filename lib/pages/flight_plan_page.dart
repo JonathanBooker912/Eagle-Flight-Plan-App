@@ -177,13 +177,13 @@ class _FlightPlanPageState extends State<FlightPlanPage> {
                       children: [
                         Text(
                           _completionText,
-                          style: textTheme.bodySmall,
+                          style: textTheme.bodyMedium,
                         ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: LinearProgressIndicator(
                             value: _completionPercentage,
-                            backgroundColor: colorScheme.onSurface,
+                            backgroundColor: colorScheme.surface,
                             borderRadius: BorderRadius.circular(10),
                             valueColor: AlwaysStoppedAnimation<Color>(
                               colorScheme.primary,
