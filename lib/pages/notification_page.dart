@@ -2,17 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/notification.dart';
 import '../services/notification_service.dart';
-import '../services/api_session_storage.dart';
-import '../theme/app_theme.dart';
 
 class NotificationPage extends StatefulWidget {
   const NotificationPage({super.key});
 
   @override
-  _NotificationPageState createState() => _NotificationPageState();
+  NotificationPageState createState() => NotificationPageState();
 }
 
-class _NotificationPageState extends State<NotificationPage> {
+class NotificationPageState extends State<NotificationPage> {
   late NotificationService _notificationService;
   List<NotificationModel> _notifications = [];
   bool _isLoading = true;
@@ -49,12 +47,11 @@ class _NotificationPageState extends State<NotificationPage> {
 
   Future<void> _loadNotifications() async {
     try {
-      print('🔄 Loading notifications (page $_currentPage)');
       final response = await _notificationService.getNotificationsForUser(
         page: _currentPage,
         pageSize: _pageSize,
       );
-      print('✅ Successfully loaded notifications');
+
       setState(() {
         _notifications = response.notifications;
         _totalPages = response.totalPages;
@@ -62,7 +59,6 @@ class _NotificationPageState extends State<NotificationPage> {
         _isLoading = false;
       });
     } catch (e) {
-      print('❌ Error loading notifications: $e');
       setState(() {
         _isLoading = false;
       });
@@ -78,13 +74,11 @@ class _NotificationPageState extends State<NotificationPage> {
     });
 
     try {
-      print('🔄 Loading more notifications (page ${_currentPage + 1})');
       final nextPage = _currentPage + 1;
       final response = await _notificationService.getNotificationsForUser(
         page: nextPage,
         pageSize: _pageSize,
       );
-      print('✅ Successfully loaded more notifications');
 
       setState(() {
         _notifications.addAll(response.notifications);
@@ -94,7 +88,6 @@ class _NotificationPageState extends State<NotificationPage> {
         _isLoadingMore = false;
       });
     } catch (e) {
-      print('❌ Error loading more notifications: $e');
       setState(() {
         _isLoadingMore = false;
       });
@@ -104,9 +97,8 @@ class _NotificationPageState extends State<NotificationPage> {
 
   Future<void> _markAsRead(NotificationModel notification) async {
     try {
-      print('📝 Marking notification ${notification.id} as read');
       await _notificationService.markAsRead(notification.id);
-      print('✅ Successfully marked notification as read');
+
       setState(() {
         _notifications = _notifications.map((n) {
           if (n.id == notification.id) {
@@ -124,7 +116,6 @@ class _NotificationPageState extends State<NotificationPage> {
         }).toList();
       });
     } catch (e) {
-      print('❌ Error marking notification as read: $e');
       _showError('Unable to mark notification as read. Please try again.');
     }
   }
@@ -325,7 +316,7 @@ class _NotificationPageState extends State<NotificationPage> {
               ],
             )
           : null,
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _notifications.isEmpty
@@ -412,7 +403,8 @@ class _NotificationPageState extends State<NotificationPage> {
                                       horizontal: 10, vertical: 4),
                                   color: _selectedNotifications
                                           .contains(notification.id)
-                                      ? colorScheme.secondary.withOpacity(0.2)
+                                      ? colorScheme.secondary
+                                          .withValues(alpha: 0.2)
                                       : null,
                                   child: Padding(
                                     padding: const EdgeInsets.all(16.0),
@@ -534,18 +526,6 @@ class _NotificationPageState extends State<NotificationPage> {
       _showSuccess('Notifications marked as read');
     } catch (e) {
       _showError('Unable to mark notifications as read. Please try again.');
-    }
-  }
-
-  Future<void> _deleteNotification(NotificationModel notification) async {
-    try {
-      await _notificationService.deleteNotification(notification.id);
-      setState(() {
-        _notifications.removeWhere((n) => n.id == notification.id);
-      });
-      _showSuccess('Notification deleted');
-    } catch (e) {
-      _showError('Unable to delete notification. Please try again.');
     }
   }
 }

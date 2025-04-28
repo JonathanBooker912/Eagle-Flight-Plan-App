@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
 import '../services/service_locator.dart';
 import '../models/flight_plan.dart';
 import '../models/semester.dart';
@@ -8,7 +7,7 @@ import '../widgets/flight_plan_item_card.dart';
 import '../widgets/list_loader.dart';
 
 class FlightPlanPage extends StatefulWidget {
-  FlightPlanPage({super.key});
+  const FlightPlanPage({super.key});
 
   @override
   State<FlightPlanPage> createState() => _FlightPlanPageState();
@@ -41,7 +40,7 @@ class _FlightPlanPageState extends State<FlightPlanPage> {
         if (statusCompare != 0) return statusCompare;
 
         // If status is the same, sort by due date
-        return a.dueDate.compareTo(b.dueDate);
+        return a.name.compareTo(b.name);
       });
   }
 
@@ -86,7 +85,6 @@ class _FlightPlanPageState extends State<FlightPlanPage> {
         _isLoadingFlightPlans = false;
       });
     } catch (e) {
-      print(e);
       if (!mounted) return;
 
       setState(() {
@@ -108,7 +106,7 @@ class _FlightPlanPageState extends State<FlightPlanPage> {
     double height = MediaQuery.of(context).viewPadding.top;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: Column(
         children: [
           Padding(
@@ -185,7 +183,7 @@ class _FlightPlanPageState extends State<FlightPlanPage> {
                         Expanded(
                           child: LinearProgressIndicator(
                             value: _completionPercentage,
-                            backgroundColor: colorScheme.background,
+                            backgroundColor: colorScheme.surface,
                             borderRadius: BorderRadius.circular(10),
                             valueColor: AlwaysStoppedAnimation<Color>(
                               colorScheme.primary,

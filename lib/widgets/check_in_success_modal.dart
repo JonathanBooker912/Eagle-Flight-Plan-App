@@ -61,9 +61,9 @@ class CheckInSuccessModal extends StatelessWidget {
                               padding: const EdgeInsets.fromLTRB(8, 8, 0, 8),
                               child: Container(
                                 width: 12,
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
                                   color: AppTheme.primaryColor,
-                                  borderRadius: const BorderRadius.only(
+                                  borderRadius: BorderRadius.only(
                                     topLeft: Radius.circular(9),
                                     bottomLeft: Radius.circular(9),
                                   ),

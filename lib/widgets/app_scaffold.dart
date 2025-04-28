@@ -28,7 +28,7 @@ class AppScaffold extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       bottomNavigationBar:
           stackNavigationBar ? null : NavigationBar(currentRoute: currentRoute),
       body: stackNavigationBar
@@ -54,29 +54,29 @@ class NavigationBar extends StatelessWidget {
   const NavigationBar({super.key, required this.currentRoute});
 
   Color _getIconColor(String route, ColorScheme colorScheme) {
-    return currentRoute == route ? colorScheme.primary : colorScheme.background;
+    return currentRoute == route ? colorScheme.primary : colorScheme.surface;
   }
 
   void _navigateTo(BuildContext context, String route) {
     Widget page;
     switch (route) {
       case '/home':
-        page = FlightPlanPage();
+        page = const FlightPlanPage();
         break;
       case '/calendar':
-        page = CalendarPage();
+        page = const CalendarPage();
         break;
       case '/qr':
         page = const EventCheckInPage();
         break;
       case '/notifications':
-        page = NotificationPage();
+        page = const NotificationPage();
         break;
       case '/profile':
         page = const ProfilePage();
         break;
       default:
-        page = FlightPlanPage();
+        page = const FlightPlanPage();
     }
 
     Navigator.pushReplacement(
@@ -99,12 +99,12 @@ class NavigationBar extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       child: Card(
         elevation: 0,
         color: AppTheme.secondaryColor,
         child: Padding(
-          padding: EdgeInsets.all(6),
+          padding: const EdgeInsets.all(6),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

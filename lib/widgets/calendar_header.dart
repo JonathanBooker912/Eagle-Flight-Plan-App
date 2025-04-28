@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:table_calendar/table_calendar.dart';
-import '../theme/app_theme.dart';
 
 class CalendarHeader extends StatelessWidget {
   final DateTime date;

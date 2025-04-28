@@ -41,6 +41,7 @@ dependencies:
   table_calendar: ^3.0.9
   mobile_scanner: ^6.0.7
   url_launcher: ^6.2.4
+  firebase_messaging: ^15.2.5
 
 dev_dependencies:
   flutter_test:
@@ -57,6 +58,7 @@ dev_dependencies:
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
+  eagle_flight_plan_app: any
 flutter:
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
 
 class ListLoader extends StatelessWidget {
   const ListLoader({Key? key}) : super(key: key);
@@ -10,7 +9,7 @@ class ListLoader extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 4),
       itemCount: 6, // Show 5 shimmering items
       itemBuilder: (context, index) {
-        return _ShimmeringCard();
+        return const _ShimmeringCard();
       },
     );
   }
@@ -71,8 +70,8 @@ class _ShimmeringCardState extends State<_ShimmeringCard>
                   child: Container(
                     width: 12,
                     decoration: BoxDecoration(
-                      color: colorScheme.background.withOpacity(
-                        _animation.value,
+                      color: colorScheme.surface.withValues(
+                        alpha: _animation.value,
                       ),
                       borderRadius: const BorderRadius.only(
                         topLeft: Radius.circular(9),
@@ -96,8 +95,8 @@ class _ShimmeringCardState extends State<_ShimmeringCard>
                                 width: 200,
                                 height: 36,
                                 decoration: BoxDecoration(
-                                  color: colorScheme.background.withOpacity(
-                                    _animation.value,
+                                  color: colorScheme.surface.withValues(
+                                    alpha: _animation.value,
                                   ),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -107,8 +106,8 @@ class _ShimmeringCardState extends State<_ShimmeringCard>
                                 width: 150,
                                 height: 16,
                                 decoration: BoxDecoration(
-                                  color: colorScheme.background.withOpacity(
-                                    _animation.value,
+                                  color: colorScheme.surface.withValues(
+                                    alpha: _animation.value,
                                   ),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -121,8 +120,8 @@ class _ShimmeringCardState extends State<_ShimmeringCard>
                           width: 60,
                           height: 24,
                           decoration: BoxDecoration(
-                            color: colorScheme.background.withOpacity(
-                              _animation.value,
+                            color: colorScheme.surface.withValues(
+                              alpha: _animation.value,
                             ),
                             borderRadius: BorderRadius.circular(8),
                           ),

@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'api_service.dart';
 import '../services/api_session_storage.dart';
 
@@ -57,40 +56,20 @@ class BadgeService extends ApiService {
       {int page = 1, int pageSize = 6}) async {
     final studentId = (await ApiSessionStorage.getSession()).studentId;
     try {
-      print(
-          '🔍 Fetching badges for student $studentId (page: $page, pageSize: $pageSize)');
-
       final response = await get(
         '/badge/student/$studentId?page=$page&pageSize=$pageSize',
       );
 
-      print('📦 Raw API Response: $response');
-
-      if (response == null) {
-        print('❌ No response received from API');
-        return BadgeResponse(badges: [], total: 0);
-      }
-
       // The response is a map with badges and total
-      final Map<String, dynamic> responseMap = response as Map<String, dynamic>;
+      final Map<String, dynamic> responseMap = response;
       final List<dynamic> badgesJson = responseMap['badges'] ?? [];
       final total = responseMap['total'] ?? 0;
-
-      print('📊 Response Stats:');
-      print('   - Number of badges: ${badgesJson.length}');
-      print('   - Total badges: $total');
 
       final badges =
           badgesJson.map((json) => BadgeModel.fromJson(json)).toList();
 
-      print('🎯 Parsed Badges:');
-      for (var badge in badges) {
-        print('   - ${badge.name} (${badge.description})');
-      }
-
       return BadgeResponse(badges: badges, total: total);
     } catch (e) {
-      print('❌ Error fetching badges: $e');
       return BadgeResponse(badges: [], total: 0);
     }
   }

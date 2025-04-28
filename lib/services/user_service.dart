@@ -1,7 +1,5 @@
-import 'dart:convert';
 import 'package:eagle_flight_plan/services/api_session_storage.dart';
 
-import 'service_locator.dart';
 import 'api_service.dart';
 
 class UserProfile {
@@ -41,13 +39,8 @@ class UserService extends ApiService {
         '/user/$userId',
       );
 
-      if (response == null) {
-        throw Exception('No response received from API');
-      }
-
       return UserProfile.fromJson(response);
     } catch (e) {
-      print('Error fetching user profile: $e');
       rethrow;
     }
   }
