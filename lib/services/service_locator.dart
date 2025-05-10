@@ -6,6 +6,7 @@ import 'strength_service.dart';
 import 'link_service.dart';
 import 'user_service.dart';
 import 'badge_service.dart';
+import 'student_service.dart';
 
 class ServiceLocator {
   static final ServiceLocator _instance = ServiceLocator._internal();
@@ -21,6 +22,7 @@ class ServiceLocator {
   late final LinkService _link;
   late final UserService _user;
   late final BadgeService _badge;
+  late final StudentService _student;
 
   void initialize({required String baseUrl}) {
     this.baseUrl = baseUrl;
@@ -32,6 +34,7 @@ class ServiceLocator {
     _link = LinkService(baseUrl: baseUrl);
     _user = UserService(baseUrl: baseUrl);
     _badge = BadgeService(baseUrl: baseUrl);
+    _student = StudentService(baseUrl: baseUrl);
   }
 
   ApiService get api => _apiService;
@@ -42,6 +45,7 @@ class ServiceLocator {
   LinkService get link => _link;
   UserService get user => _user;
   BadgeService get badge => _badge;
+  StudentService get student => _student;
 
   void dispose() {
     _apiService.dispose();
